@@ -1,350 +1,1807 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Simulador de Pallet</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.9);
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
-    }
-    label { display: block; margin-top: 5px; }
-    #result { margin-top: 10px; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div id="controls">
-    <!-- Inputs para las cajas -->
-<label>Dimensiones caja (Largo, Ancho, Alto):
-  <input type="text" id="boxDimensions" placeholder="Ej: 82.00 26.00 36.00">
-</label>
 
-<label>Peso por caja (kg):
-  <input type="number" id="boxWeight" placeholder="Ej: 12.5" step="0.01" min="0">
-</label>
+<meta charset="UTF-8">
 
-<button id="addBoxes">Agregar cajas</button>
-    <!-- Inputs para el pallet -->
-    <hr>
-    <label>Ancho pallet (m): <input type="number" id="palletWidthInput" value="1.1" step="0.05" min="0.05"></label>
-    <label>Largo pallet (m): <input type="number" id="palletDepthInput" value="1.2" step="0.05" min="0.05"></label>
-    <label>Altura pallet (m): <input type="number" id="palletHeightInput" value="0.15" step="0.05" min="0.05"></label>
-<label>Peso por caja (kg):
-  <input type="number" id="boxWeight" placeholder="Ej: 12.5" step="0.01" min="0">
-</label>
-    <button id="updatePallet">Actualizar pallet</button>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <div id="result">Cajas en pallet: 0</div>
-  </div>
+<title>Simulador de Pallet</title>
 
- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
-<script>
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
 
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-  var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  dirLight.position.set(5, 10, 5);
-  scene.add(dirLight);
+<style>
 
-  var palletWidth = 1.1;
-  var palletDepth = 1.2;
-  var palletHeight = 0.15;
+/* =========================================================
+   CONFIGURACIÓN GENERAL
+========================================================= */
 
-  var palletMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-  var palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
-  var pallet = new THREE.Mesh(palletGeometry, palletMaterial);
-  pallet.position.y = -palletHeight / 2;
-  scene.add(pallet);
-
-  var grid = new THREE.GridHelper(5, 10);
-  scene.add(grid);
-
-  var radius = 3;
-  var angle = 0;
-  var pitch = 0.3;
-  var pitchMin = -1;
-  var pitchMax = 1;
-  camera.position.set(radius * Math.cos(angle), 1.5, radius * Math.sin(angle));
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-  var isDragging = false;
-  var previousMouseX = 0;
-  var previousMouseY = 0;
-
-  document.addEventListener('mousedown', function(event) {
-    if (event.button === 0) {
-      isDragging = true;
-      previousMouseX = event.clientX;
-      previousMouseY = event.clientY;
-    }
-  });
-  document.addEventListener('mouseup', function(event) {
-    if (event.button === 0) isDragging = false;
-  });
-  document.addEventListener('mousemove', function(event) {
-    if (!isDragging) return;
-    var deltaX = event.clientX - previousMouseX;
-    var deltaY = event.clientY - previousMouseY;
-    previousMouseX = event.clientX;
-    previousMouseY = event.clientY;
-    angle += deltaX * 0.005;
-    pitch -= deltaY * 0.003;
-    pitch = Math.max(pitchMin, Math.min(pitchMax, pitch));
-    var x = radius * Math.cos(pitch) * Math.cos(angle);
-    var y = radius * Math.sin(pitch);
-    var z = radius * Math.cos(pitch) * Math.sin(angle);
-    camera.position.set(x, y, z);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  window.addEventListener('resize', function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
- function addBoxes() {
-
-  var input = document.getElementById("boxDimensions").value.trim();
-
-  // Separar por tab, espacio o coma
-  var parts = input.split(/[\s,]+/);
-
-  if (parts.length < 3) {
-    alert("Por favor ingresa 3 valores: Largo, Ancho y Alto");
-    return;
-  }
-
-  // Orden: Largo, Ancho, Alto
-  var boxD = parseFloat(parts[0]) / 100; // Largo
-  var boxW = parseFloat(parts[1]) / 100; // Ancho
-  var boxH = parseFloat(parts[2]) / 100; // Alto
-
-  // Peso unitario
-  var boxWeight = parseFloat(document.getElementById("boxWeight").value);
-
-  if (
-    isNaN(boxW) ||
-    isNaN(boxD) ||
-    isNaN(boxH) ||
-    boxW <= 0 ||
-    boxD <= 0 ||
-    boxH <= 0
-  ) {
-    alert("Dimensiones inválidas");
-    return;
-  }
-
-  if (isNaN(boxWeight) || boxWeight <= 0) {
-    alert("Ingresa un peso válido para la caja");
-    return;
-  }
-
-  // Eliminar cajas anteriores
-  for (var i = scene.children.length - 1; i >= 0; i--) {
-    if (
-      scene.children[i].userData &&
-      (scene.children[i].userData.type === "box" ||
-       scene.children[i].userData.type === "edge")
-    ) {
-      scene.remove(scene.children[i]);
-    }
-  }
-
-  var maxStackHeight = 1.50;
-  var maxLayers = Math.floor(maxStackHeight / boxH);
-  let totalBoxes = 0;
-
-  // ------------------------
-  // Bin packing simplificado
-  // ------------------------
-  function generateLayer(yOffset, rotateLayer) {
-
-    let occupied = [];
-
-    function fits(x, z, w, d) {
-
-      if (x + w > palletWidth || z + d > palletDepth) {
-        return false;
-      }
-
-      for (let r of occupied) {
-
-        if (
-          !(x + w <= r.x ||
-            x >= r.x + r.w ||
-            z + d <= r.z ||
-            z >= r.z + r.d)
-        ) {
-          return false;
-        }
-
-      }
-
-      return true;
-    }
-
-    let orientations = [
-      { w: boxW, d: boxD },
-      { w: boxD, d: boxW }
-    ];
-
-    let step = 0.01;
-
-    for (let z = 0; z < palletDepth; z += step) {
-
-      for (let x = 0; x < palletWidth; x += step) {
-
-        for (let o of orientations) {
-
-          if (fits(x, z, o.w, o.d)) {
-
-            let geometry = new THREE.BoxGeometry(
-              o.w,
-              boxH,
-              o.d
-            );
-
-            let solidMaterial =
-              new THREE.MeshLambertMaterial({
-                color: rotateLayer
-                  ? 0xffa07a
-                  : 0x87CEEB
-              });
-
-            let box =
-              new THREE.Mesh(
-                geometry,
-                solidMaterial
-              );
-
-            box.position.set(
-              -palletWidth / 2 + x + o.w / 2,
-              boxH / 2 + yOffset,
-              -palletDepth / 2 + z + o.d / 2
-            );
-
-            box.userData = {
-              type: "box"
-            };
-
-            scene.add(box);
-
-            let wireMaterial =
-              new THREE.MeshBasicMaterial({
-                color: 0x000000,
-                wireframe: true
-              });
-
-            let wireBox =
-              new THREE.Mesh(
-                geometry,
-                wireMaterial
-              );
-
-            wireBox.position.copy(
-              box.position
-            );
-
-            wireBox.userData = {
-              type: "edge"
-            };
-
-            scene.add(wireBox);
-
-            occupied.push({
-              x: x,
-              z: z,
-              w: o.w,
-              d: o.d
-            });
-
-            totalBoxes++;
-          }
-        }
-      }
-    }
-  }
-
-  for (let h = 0; h < maxLayers; h++) {
-    generateLayer(
-      h * boxH,
-      h % 2 === 1
-    );
-  }
-
-  // ------------------------
-  // Estadísticas
-  // ------------------------
-
-  let palletVolume =
-    palletWidth *
-    palletDepth *
-    maxStackHeight;
-
-  let boxVolume =
-    boxW *
-    boxD *
-    boxH *
-    totalBoxes;
-
-  let occupancy =
-    (
-      boxVolume /
-      palletVolume *
-      100
-    ).toFixed(1);
-
-  let totalWeight =
-    (
-      totalBoxes *
-      boxWeight
-    ).toFixed(2);
-
-  document.getElementById(
-    "result"
-  ).textContent =
-    "Cajas en pallet: " +
-    totalBoxes +
-    " | Capas: " +
-    maxLayers +
-    " | Ocupación: " +
-    occupancy +
-    "%" +
-    " | Peso total: " +
-    totalWeight +
-    " kg";
+* {
+    box-sizing: border-box;
 }
-  document.getElementById("addBoxes").addEventListener("click", addBoxes);
 
-  document.getElementById("updatePallet").addEventListener("click", function () {
-    palletWidth = parseFloat(document.getElementById("palletWidthInput").value);
-    palletDepth = parseFloat(document.getElementById("palletDepthInput").value);
-    palletHeight = parseFloat(document.getElementById("palletHeightInput").value);
-    scene.remove(pallet);
-    palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
-    pallet = new THREE.Mesh(palletGeometry, palletMaterial);
-    pallet.position.y = -palletHeight / 2;
-    scene.add(pallet);
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   FONDO TECNOLÓGICO / LOGÍSTICO
+========================================================= */
+
+body {
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    color: #e8f0f4;
+
+    background-color: #07131c;
+
+    /*
+       CAPAS DEL FONDO
+    */
+
+    background-image:
+
+        /* Brillo verde */
+        radial-gradient(
+            circle at 82% 22%,
+            rgba(45,198,83,0.16) 0%,
+            rgba(45,198,83,0.05) 18%,
+            transparent 42%
+        ),
+
+        /* Brillo morado */
+        radial-gradient(
+            circle at 18% 78%,
+            rgba(123,44,191,0.16) 0%,
+            rgba(123,44,191,0.05) 18%,
+            transparent 42%
+        ),
+
+        /* Brillo azul central */
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(30,100,140,0.13) 0%,
+            transparent 48%
+        ),
+
+        /* Líneas verticales */
+        linear-gradient(
+            90deg,
+            rgba(90,170,200,0.045) 1px,
+            transparent 1px
+        ),
+
+        /* Líneas horizontales */
+        linear-gradient(
+            0deg,
+            rgba(90,170,200,0.045) 1px,
+            transparent 1px
+        );
+
+    background-size:
+
+        100% 100%,
+        100% 100%,
+        100% 100%,
+        55px 55px,
+        55px 55px;
+
+    background-position:
+        center,
+        center,
+        center,
+        center,
+        center;
+
+}
+
+
+/* =========================================================
+   CAPA TECNOLÓGICA
+========================================================= */
+
+body::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    background-image:
+
+        /* pequeños nodos */
+        radial-gradient(
+            circle,
+            rgba(45,198,83,0.20) 0,
+            rgba(45,198,83,0.20) 2px,
+            transparent 3px
+        ),
+
+        radial-gradient(
+            circle,
+            rgba(123,44,191,0.18) 0,
+            rgba(123,44,191,0.18) 2px,
+            transparent 3px
+        );
+
+    background-size:
+        120px 120px,
+        170px 170px;
+
+    background-position:
+        30px 40px,
+        80px 100px;
+
+}
+
+
+/* =========================================================
+   LÍNEAS DE CIRCUITO / RUTAS
+========================================================= */
+
+body::after {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    opacity: 0.45;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            transparent 18%,
+            rgba(45,198,83,0.10) 18.1%,
+            transparent 18.2%,
+            transparent 72%,
+            rgba(45,198,83,0.08) 72.1%,
+            transparent 72.2%
+        ),
+
+        linear-gradient(
+            0deg,
+            transparent 0%,
+            transparent 28%,
+            rgba(123,44,191,0.10) 28.1%,
+            transparent 28.2%,
+            transparent 68%,
+            rgba(123,44,191,0.08) 68.1%,
+            transparent 68.2%
+        );
+
+}
+
+
+/* =========================================================
+   CANVAS THREE.JS
+========================================================= */
+
+canvas {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+
+}
+
+
+/* =========================================================
+   PANEL
+========================================================= */
+
+#controls {
+
+    position: absolute;
+
+    top: 22px;
+    left: 22px;
+
+    width: 315px;
+
+    padding: 22px;
+
+    background: rgba(255,255,255,0.95);
+
+    border: 1px solid rgba(255,255,255,0.9);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 18px 40px rgba(0,0,0,0.35),
+        0 4px 12px rgba(0,0,0,0.20);
+
+    backdrop-filter: blur(14px);
+
+    z-index: 10;
+}
+
+
+#controls::before {
+
+    content: "SIMULADOR DE PALLET";
+
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.5px;
+
+    color: #263238;
+}
+
+
+#controls::after {
+
+    content: "Configuración de carga y visualización 3D";
+
+    display: block;
+
+    margin-bottom: 20px;
+
+    font-size: 11px;
+
+    color: #78909c;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+label {
+
+    display: block;
+
+    margin-top: 13px;
+
+    margin-bottom: 6px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #546e7a;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+input {
+
+    width: 100%;
+
+    height: 40px;
+
+    padding: 0 12px;
+
+    border: 1px solid #d5dee4;
+
+    border-radius: 11px;
+
+    background: #f8fafb;
+
+    color: #263238;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: 0.2s;
+}
+
+
+input:focus {
+
+    border-color: #78909c;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 3px rgba(120,144,156,0.12);
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+button {
+
+    width: 100%;
+
+    height: 42px;
+
+    margin-top: 14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #263238;
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    box-shadow:
+        0 5px 12px rgba(38,50,56,0.18);
+}
+
+
+button:hover {
+
+    transform: translateY(-1px);
+
+    background: #37474f;
+}
+
+
+button:active {
+
+    transform: translateY(1px);
+}
+
+
+/* =========================================================
+   SEPARADOR
+========================================================= */
+
+hr {
+
+    border: none;
+
+    border-top: 1px solid #e4eaee;
+
+    margin: 20px 0 8px;
+}
+
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+#result {
+
+    margin-top: 18px;
+
+    padding: 13px;
+
+    border-radius: 12px;
+
+    background: #f3f7f9;
+
+    border: 1px solid #e0e8ec;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+    color: #455a64;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =======================================================
+     CONTROLES
+======================================================= -->
+
+<div id="controls">
+
+
+    <label>
+        Dimensiones caja (Largo Ancho Alto cm)
+    </label>
+
+
+    <input
+        id="boxDimensions"
+        type="text"
+        value="82.00 26.00 36.00"
+    >
+
+
+    <label>
+        Peso por caja (kg)
+    </label>
+
+
+    <input
+        id="boxWeight"
+        type="number"
+        value="13.20"
+        step="0.01"
+    >
+
+
+    <button id="addBoxes">
+        Agregar cajas
+    </button>
+
+
+    <hr>
+
+
+    <label>
+        Ancho pallet (m)
+    </label>
+
+
+    <input
+        id="palletWidthInput"
+        type="number"
+        value="1.1"
+        step="0.01"
+    >
+
+
+    <label>
+        Largo pallet (m)
+    </label>
+
+
+    <input
+        id="palletDepthInput"
+        type="number"
+        value="1.2"
+        step="0.01"
+    >
+
+
+    <label>
+        Altura pallet (m)
+    </label>
+
+
+    <input
+        id="palletHeightInput"
+        type="number"
+        value="0.15"
+        step="0.01"
+    >
+
+
+    <button id="updatePallet">
+        Actualizar pallet
+    </button>
+
+
+    <div id="result">
+        Cajas en pallet: 0
+    </div>
+
+
+</div>
+
+
+<!-- =======================================================
+     THREE.JS R71
+======================================================= -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+
+
+<script>
+
+
+/* =========================================================
+   ESCENA
+========================================================= */
+
+var scene = new THREE.Scene();
+
+
+/* =========================================================
+   
+/* =========================================================
+   CÁMARA
+========================================================= */
+
+var camera =
+    new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        100
+    );
+
+
+camera.position.set(
+    2.7,
+    2.4,
+    3.2
+);
+
+
+camera.lookAt(
+    new THREE.Vector3(
+        0,
+        0.7,
+        0
+    )
+);
+
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+var renderer =
+    new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+    });
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio || 1,
+        2
+    )
+);
+
+document.body.appendChild(
+    renderer.domElement
+);
+/* =========================================================
+   ILUMINACIÓN
+========================================================= */
+
+var ambientLight =
+    new THREE.AmbientLight(
+        0xffffff,
+        0.72
+    );
+
+
+scene.add(
+    ambientLight
+);
+
+
+var dirLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        0.75
+    );
+
+
+dirLight.position.set(
+    3,
+    5,
+    4
+);
+
+
+scene.add(
+    dirLight
+);
+
+
+var fillLight =
+    new THREE.DirectionalLight(
+        0xdcecff,
+        0.28
+    );
+
+
+fillLight.position.set(
+    -3,
+    2,
+    -2
+);
+
+
+scene.add(
+    fillLight
+);
+
+
+/* =========================================================
+   DIMENSIONES PALLET
+========================================================= */
+
+var palletWidth = 1.1;
+
+var palletDepth = 1.2;
+
+var palletHeight = 0.15;
+
+
+/* =========================================================
+   COLORES DE LAS CAJAS
+========================================================= */
+
+var colorA = 0x7B2CBF;
+
+var colorB = 0x2DC653;
+
+
+/* =========================================================
+   SEPARACIÓN VISUAL
+========================================================= */
+
+var visualGap = 0.006;
+
+
+/* =========================================================
+   FORMA REDONDEADA
+========================================================= */
+
+function createRoundedShape(
+    width,
+    height,
+    radius
+) {
+
+    var shape =
+        new THREE.Shape();
+
+
+    var r =
+        Math.min(
+            radius,
+            width / 2,
+            height / 2
+        );
+
+
+    shape.moveTo(
+        -width / 2 + r,
+        -height / 2
+    );
+
+
+    shape.lineTo(
+        width / 2 - r,
+        -height / 2
+    );
+
+
+    shape.quadraticCurveTo(
+        width / 2,
+        -height / 2,
+        width / 2,
+        -height / 2 + r
+    );
+
+
+    shape.lineTo(
+        width / 2,
+        height / 2 - r
+    );
+
+
+    shape.quadraticCurveTo(
+        width / 2,
+        height / 2,
+        width / 2 - r,
+        height / 2
+    );
+
+
+    shape.lineTo(
+        -width / 2 + r,
+        height / 2
+    );
+
+
+    shape.quadraticCurveTo(
+        -width / 2,
+        height / 2,
+        -width / 2,
+        height / 2 - r
+    );
+
+
+    shape.lineTo(
+        -width / 2,
+        -height / 2 + r
+    );
+
+
+    shape.quadraticCurveTo(
+        -width / 2,
+        -height / 2,
+        -width / 2 + r,
+        -height / 2
+    );
+
+
+    return shape;
+}
+
+
+/* =========================================================
+   GEOMETRÍA REDONDEADA
+========================================================= */
+
+function createRoundedBoxGeometry(
+    width,
+    height,
+    depth,
+    radius
+) {
+
+    var shape =
+        createRoundedShape(
+            width,
+            height,
+            radius
+        );
+
+
+    var geometry =
+        new THREE.ExtrudeGeometry(
+            shape,
+            {
+
+                amount: depth,
+
+                bevelEnabled: true,
+
+                bevelThickness:
+                    Math.min(
+                        radius * 0.35,
+                        0.012
+                    ),
+
+                bevelSize:
+                    Math.min(
+                        radius * 0.35,
+                        0.012
+                    ),
+
+                bevelSegments: 2,
+
+                curveSegments: 4
+
+            }
+        );
+
+
+    /*
+       Compatible con Three.js r71.
+    */
+
+    geometry.applyMatrix(
+        new THREE.Matrix4().makeTranslation(
+            0,
+            0,
+            -depth / 2
+        )
+    );
+
+
+    return geometry;
+}
+
+
+/* =========================================================
+   PALLET
+========================================================= */
+
+var palletMaterial =
+    new THREE.MeshLambertMaterial({
+        color: 0x9a5b32
+    });
+
+
+var palletGeometry =
+    createRoundedBoxGeometry(
+        palletWidth,
+        palletHeight,
+        palletDepth,
+        0.045
+    );
+
+
+var pallet =
+    new THREE.Mesh(
+        palletGeometry,
+        palletMaterial
+    );
+
+
+pallet.position.y =
+    -palletHeight / 2;
+
+
+scene.add(
+    pallet
+);
+
+
+/* =========================================================
+   BORDE SUAVE DEL PALLET
+========================================================= */
+
+var palletEdgeMaterial =
+    new THREE.MeshBasicMaterial({
+
+        color: 0x5d3924,
+
+        wireframe: false,
+
+        transparent: true,
+
+        opacity: 0.28
+
+    });
+
+
+var palletEdge =
+    new THREE.Mesh(
+        palletGeometry.clone(),
+        palletEdgeMaterial
+    );
+
+
+palletEdge.position.copy(
+    pallet.position
+);
+
+
+scene.add(
+    palletEdge
+);
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+var grid =
+    new THREE.GridHelper(
+        5,
+        20
+    );
+
+
+if (grid.material) {
+
+    grid.material.color.set(
+        0x9eacb5
+    );
+
+    grid.material.opacity =
+        0.22;
+
+    grid.material.transparent =
+        true;
+}
+
+
+scene.add(
+    grid
+);
+
+
+/* =========================================================
+   CONTROL DE CÁMARA
+========================================================= */
+
+var isDragging = false;
+
+var previousMouseX = 0;
+
+var previousMouseY = 0;
+
+var cameraRotationY = 0;
+
+var cameraRotationX = 0;
+
+
+document.addEventListener(
+    "mousedown",
+    function(event) {
+
+        isDragging = true;
+
+        previousMouseX =
+            event.clientX;
+
+        previousMouseY =
+            event.clientY;
+
+    }
+);
+
+
+document.addEventListener(
+    "mouseup",
+    function() {
+
+        isDragging = false;
+
+    }
+);
+
+
+document.addEventListener(
+    "mousemove",
+    function(event) {
+
+        if (!isDragging)
+            return;
+
+
+        var deltaX =
+            event.clientX -
+            previousMouseX;
+
+
+        var deltaY =
+            event.clientY -
+            previousMouseY;
+
+
+        previousMouseX =
+            event.clientX;
+
+
+        previousMouseY =
+            event.clientY;
+
+
+        cameraRotationY +=
+            deltaX * 0.01;
+
+
+        cameraRotationX +=
+            deltaY * 0.01;
+
+
+        cameraRotationX =
+            Math.max(
+                -1.2,
+                Math.min(
+                    1.2,
+                    cameraRotationX
+                )
+            );
+
+    }
+);
+
+
+/* =========================================================
+   ACTUALIZAR CÁMARA
+========================================================= */
+
+function updateCamera() {
+
+    var radius = 4.2;
+
+    var targetX = 0;
+
+    var targetY = 0.7;
+
+    var targetZ = 0;
+
+
+    camera.position.x =
+        targetX +
+        Math.sin(cameraRotationY) *
+        Math.cos(cameraRotationX) *
+        radius;
+
+
+    camera.position.z =
+        targetZ +
+        Math.cos(cameraRotationY) *
+        Math.cos(cameraRotationX) *
+        radius;
+
+
+    camera.position.y =
+        targetY +
+        Math.sin(cameraRotationX) *
+        radius;
+
+
+    camera.lookAt(
+        new THREE.Vector3(
+            0,
+            0.7,
+            0
+        )
+    );
+}
+
+
+/* =========================================================
+   GENERAR CAJAS
+========================================================= */
+
+function addBoxes() {
+
+    var input =
+        document
+        .getElementById(
+            "boxDimensions"
+        )
+        .value
+        .trim();
+
+
+    var parts =
+        input.split(
+            /[\s,]+/
+        );
+
+
+    if (parts.length < 3) {
+
+        alert(
+            "Ingresa Largo, Ancho y Alto."
+        );
+
+        return;
+    }
+
+
+    var boxD =
+        parseFloat(parts[0]) / 100;
+
+
+    var boxW =
+        parseFloat(parts[1]) / 100;
+
+
+    var boxH =
+        parseFloat(parts[2]) / 100;
+
+
+    var boxWeight =
+        parseFloat(
+            document
+            .getElementById(
+                "boxWeight"
+            )
+            .value
+        );
+
+
+    if (
+        isNaN(boxD) ||
+        isNaN(boxW) ||
+        isNaN(boxH)
+    ) {
+
+        alert(
+            "Las dimensiones no son válidas."
+        );
+
+        return;
+    }
+
+
+    if (
+        boxD <= 0 ||
+        boxW <= 0 ||
+        boxH <= 0
+    ) {
+
+        alert(
+            "Las dimensiones deben ser mayores que cero."
+        );
+
+        return;
+    }
+
+
+    if (
+        isNaN(boxWeight) ||
+        boxWeight < 0
+    ) {
+
+        alert(
+            "El peso no es válido."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       ELIMINAR CAJAS ANTERIORES
+    ===================================================== */
+
+    var objectsToRemove = [];
+
+
+    scene.traverse(
+        function(object) {
+
+            if (
+                object.type === "box" ||
+                object.type === "edge"
+            ) {
+
+                objectsToRemove.push(
+                    object
+                );
+
+            }
+
+        }
+    );
+
+
+    for (
+        var i = 0;
+        i < objectsToRemove.length;
+        i++
+    ) {
+
+        scene.remove(
+            objectsToRemove[i]
+        );
+
+    }
+
+
+    /* =====================================================
+       ALTURA MÁXIMA
+    ===================================================== */
+
+    var maxStackHeight = 1.50;
+
+
+    var maxLayers =
+        Math.floor(
+            maxStackHeight / boxH
+        );
+
+
+    var totalBoxes = 0;
+
+
+    /* =====================================================
+       GENERAR UNA CAPA
+    ===================================================== */
+
+    function generateLayer(
+        yOffset,
+        rotateLayer
+    ) {
+
+        var occupied = [];
+
+
+        /*
+           Índice de la capa.
+        */
+
+        var layerIndex =
+            Math.round(
+                yOffset / boxH
+            );
+
+
+        /*
+           Contador de cajas dentro
+           de la capa actual.
+        */
+
+        var layerBoxIndex = 0;
+
+
+        /* =================================================
+           COMPROBAR SI CABE
+        ================================================= */
+
+        function fits(
+            x,
+            z,
+            w,
+            d
+        ) {
+
+            if (
+                x < -palletWidth / 2 ||
+                z < -palletDepth / 2 ||
+                x + w > palletWidth / 2 ||
+                z + d > palletDepth / 2
+            ) {
+
+                return false;
+            }
+
+
+            for (
+                var i = 0;
+                i < occupied.length;
+                i++
+            ) {
+
+                var o =
+                    occupied[i];
+
+
+                if (
+                    x < o.x + o.w &&
+                    x + w > o.x &&
+                    z < o.z + o.d &&
+                    z + d > o.z
+                ) {
+
+                    return false;
+                }
+
+            }
+
+
+            return true;
+        }
+
+
+        /* =================================================
+           ORIENTACIONES
+        ================================================= */
+
+        var orientations = [
+
+            {
+                w: boxW,
+                d: boxD
+            },
+
+            {
+                w: boxD,
+                d: boxW
+            }
+
+        ];
+
+
+        var step = 0.01;
+
+
+        /* =================================================
+           RECORRER PALLET
+        ================================================= */
+
+        for (
+            var z = -palletDepth / 2;
+            z <= palletDepth / 2;
+            z += step
+        ) {
+
+
+            for (
+                var x = -palletWidth / 2;
+                x <= palletWidth / 2;
+                x += step
+            ) {
+
+
+                for (
+                    var oi = 0;
+                    oi < orientations.length;
+                    oi++
+                ) {
+
+
+                    var o =
+                        orientations[oi];
+
+
+                    if (
+                        fits(
+                            x,
+                            z,
+                            o.w,
+                            o.d
+                        )
+                    ) {
+
+
+                        /* =================================
+                           TAMAÑO VISUAL
+                        ================================= */
+
+                        var visualW =
+                            Math.max(
+                                0.01,
+                                o.w - visualGap
+                            );
+
+
+                        var visualD =
+                            Math.max(
+                                0.01,
+                                o.d - visualGap
+                            );
+
+
+                        /* =================================
+                           RADIO DE LAS CAJAS
+                        ================================= */
+
+                        var radiusBox =
+                            Math.min(
+                                visualW,
+                                boxH
+                            ) * 0.10;
+
+
+                        radiusBox =
+                            Math.max(
+                                0.004,
+                                Math.min(
+                                    radiusBox,
+                                    0.025
+                                )
+                            );
+
+
+                        /* =================================
+                           GEOMETRÍA VISUAL
+                        ================================= */
+
+                        var geometry =
+                            createRoundedBoxGeometry(
+                                visualW,
+                                boxH,
+                                visualD,
+                                radiusBox
+                            );
+
+
+                        /* =================================
+                           PATRÓN DE COLORES
+                        ================================= */
+
+                        var widthIndex =
+                            Math.round(
+                                (x + palletWidth / 2) /
+                                o.w
+                            );
+
+
+                        var depthIndex =
+                            Math.round(
+                                (z + palletDepth / 2) /
+                                o.d
+                            );
+
+
+                        var colorIndex =
+                            (
+                                widthIndex +
+                                depthIndex +
+                                layerIndex
+                            ) % 2;
+
+
+                        var boxColor;
+
+
+                        if (
+                            colorIndex === 0
+                        ) {
+
+                            boxColor =
+                                colorA;
+
+                        } else {
+
+                            boxColor =
+                                colorB;
+
+                        }
+
+
+                        /* =================================
+                           MATERIAL
+                        ================================= */
+
+                        var material =
+                            new THREE.MeshLambertMaterial({
+
+                                color: boxColor
+
+                            });
+
+
+                        /* =================================
+                           CREAR CAJA
+                        ================================= */
+
+                        var box =
+                            new THREE.Mesh(
+                                geometry,
+                                material
+                            );
+
+
+                        /*
+                           Centramos la reducción visual
+                           dentro del espacio real de la caja.
+                        */
+
+                        box.position.set(
+
+                            x +
+                            o.w / 2,
+
+                            yOffset +
+                            boxH / 2,
+
+                            z +
+                            o.d / 2
+
+                        );
+
+
+                        box.type =
+                            "box";
+
+
+                        scene.add(
+                            box
+                        );
+
+
+                        /* =================================
+                           OCUPACIÓN REAL
+                        ================================= */
+
+                        occupied.push({
+
+                            x: x,
+
+                            z: z,
+
+                            w: o.w,
+
+                            d: o.d
+
+                        });
+
+
+                        totalBoxes++;
+
+
+                        layerBoxIndex++;
+
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    /* =====================================================
+       CREAR CAPAS
+    ===================================================== */
+
+    for (
+        var h = 0;
+        h < maxLayers;
+        h++
+    ) {
+
+        generateLayer(
+            h * boxH,
+            h % 2 === 1
+        );
+
+    }
+
+
+    /* =====================================================
+       CÁLCULOS ORIGINALES
+    ===================================================== */
+
+    var totalWeight =
+        totalBoxes *
+        boxWeight;
+
+
+    var palletVolume =
+        palletWidth *
+        palletDepth *
+        maxStackHeight;
+
+
+    var boxVolume =
+        boxW *
+        boxD *
+        boxH *
+        totalBoxes;
+
+
+    var occupancy =
+        palletVolume > 0
+        ?
+        (
+            boxVolume /
+            palletVolume
+        ) * 100
+        :
+        0;
+
+
+    /* =====================================================
+       RESULTADO
+    ===================================================== */
+
+    document
+    .getElementById(
+        "result"
+    )
+    .innerHTML =
+
+        "<strong>Cajas en pallet:</strong> " +
+        totalBoxes +
+
+        "<br><strong>Capas:</strong> " +
+        maxLayers +
+
+        "<br><strong>Ocupación:</strong> " +
+        occupancy.toFixed(1) +
+        "%" +
+
+        "<br><strong>Peso total:</strong> " +
+        totalWeight.toFixed(2) +
+        " kg";
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR PALLET
+========================================================= */
+
+function updatePallet() {
+
+    palletWidth =
+        parseFloat(
+            document
+            .getElementById(
+                "palletWidthInput"
+            )
+            .value
+        );
+
+
+    palletDepth =
+        parseFloat(
+            document
+            .getElementById(
+                "palletDepthInput"
+            )
+            .value
+        );
+
+
+    palletHeight =
+        parseFloat(
+            document
+            .getElementById(
+                "palletHeightInput"
+            )
+            .value
+        );
+
+
+    if (
+        isNaN(palletWidth) ||
+        isNaN(palletDepth) ||
+        isNaN(palletHeight) ||
+        palletWidth <= 0 ||
+        palletDepth <= 0 ||
+        palletHeight <= 0
+    ) {
+
+        alert(
+            "Las dimensiones del pallet no son válidas."
+        );
+
+        return;
+    }
+
+
+    scene.remove(
+        pallet
+    );
+
+
+    scene.remove(
+        palletEdge
+    );
+
+
+    palletGeometry =
+        createRoundedBoxGeometry(
+            palletWidth,
+            palletHeight,
+            palletDepth,
+            0.045
+        );
+
+
+    pallet =
+        new THREE.Mesh(
+            palletGeometry,
+            palletMaterial
+        );
+
+
+    pallet.position.y =
+        -palletHeight / 2;
+
+
+    scene.add(
+        pallet
+    );
+
+
+    palletEdge =
+        new THREE.Mesh(
+            palletGeometry.clone(),
+            palletEdgeMaterial
+        );
+
+
+    palletEdge.position.copy(
+        pallet.position
+    );
+
+
+    scene.add(
+        palletEdge
+    );
+
+
     addBoxes();
-  });
+
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+document
+.getElementById(
+    "addBoxes"
+)
+.addEventListener(
+    "click",
+    addBoxes
+);
+
+
+document
+.getElementById(
+    "updatePallet"
+)
+.addEventListener(
+    "click",
+    updatePallet
+);
+
+
+/* =========================================================
+   REDIMENSIONAR
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    updateCamera();
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+addBoxes();
+
+animate();
+
+
 </script>
+
+
 </body>
+
 </html>
