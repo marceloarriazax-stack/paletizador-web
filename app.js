@@ -63,7 +63,7 @@ function permuteDimensions(dimensions) {
   return variants;
 }
 
-function getAlternatingPatternCount(pallet, variant) {
+function getAlternatingPatternCount(palletObj, variant) {
   if (variant.x <= 0 || variant.y <= 0) return 0;
 
   let total = 0;
@@ -74,8 +74,8 @@ function getAlternatingPatternCount(pallet, variant) {
     const currentLength = useRotated ? variant.y : variant.x;
     const currentWidth = useRotated ? variant.x : variant.y;
 
-    const boxesPerRow = Math.max(0, Math.floor(pallet.length / currentLength));
-    const boxesPerColumn = Math.max(0, Math.floor(pallet.width / currentWidth));
+    const boxesPerRow = Math.max(0, Math.floor(palletObj.length / currentLength));
+    const boxesPerColumn = Math.max(0, Math.floor(palletObj.width / currentWidth));
     const boxesThisRow = boxesPerRow * boxesPerColumn;
 
     if (boxesThisRow <= 0) {
@@ -91,7 +91,7 @@ function getAlternatingPatternCount(pallet, variant) {
   return total;
 }
 
-function getBestOrientation(box, pallet) {
+function getBestOrientation(box, palletObj) {
   const variants = [];
   const dimensions = [box.length, box.width, box.height];
   const seen = new Set();
@@ -111,12 +111,12 @@ function getBestOrientation(box, pallet) {
       continue;
     }
 
-    const boxesPerLayer = getAlternatingPatternCount(pallet, variant);
+    const boxesPerLayer = getAlternatingPatternCount(palletObj, variant);
     if (boxesPerLayer <= 0) {
       continue;
     }
 
-    const usableStackHeight = Math.max(0, pallet.maxHeight - pallet.thickness);
+    const usableStackHeight = Math.max(0, palletObj.maxHeight - palletObj.thickness);
     const layers = Math.floor(usableStackHeight / variant.z);
 
     if (layers <= 0) {
@@ -128,7 +128,7 @@ function getBestOrientation(box, pallet) {
       boxesPerLayer,
       layers,
       totalBoxes: boxesPerLayer * layers,
-      totalHeight: pallet.thickness + variant.z * layers,
+      totalHeight: palletObj.thickness + variant.z * layers,
       volume: boxesPerLayer * layers * variant.x * variant.y * variant.z,
     });
   }
@@ -273,7 +273,7 @@ function clearGroup(group) {
   }
 }
 
-function render3DFromResult(best, pallet) {
+function render3DFromResult(best, palletObj) {
   if (!scene) {
     init3DScene();
   }
@@ -282,11 +282,11 @@ function render3DFromResult(best, pallet) {
 
   clearGroup(palletGroup);
 
-  const palletLength = pallet.length;
-  const palletWidth = pallet.width;
-  const palletThickness = pallet.thickness;
+  const pLen = palletObj.length;
+  const pWid = palletObj.width;
+  const pThick = palletObj.thickness;
 
-  const palletGeometry = new THREE.BoxGeometry(palletLength, palletThickness, palletWidth);
+  const palletGeometry = new THREE.BoxGeometry(pLen, pThick, pWid);
   const palletMaterial = new THREE.MeshStandardMaterial({
     color: 0x8b5e3c,
     roughness: 0.85,
@@ -294,7 +294,7 @@ function render3DFromResult(best, pallet) {
   });
 
   const palletMesh = new THREE.Mesh(palletGeometry, palletMaterial);
-  palletMesh.position.y = palletThickness / 2;
+  palletMesh.position.y = pThick / 2;
   palletGroup.add(palletMesh);
 
   const boxLength = best.x;
@@ -308,8 +308,8 @@ function render3DFromResult(best, pallet) {
     const currentLength = useRotated ? boxWidth : boxLength;
     const currentWidth = useRotated ? boxLength : boxWidth;
 
-    const countPerRow = Math.max(0, Math.floor(palletLength / currentLength));
-    const countCols = Math.max(0, Math.floor(palletWidth / currentWidth));
+    const countPerRow = Math.max(0, Math.floor(pLen / currentLength));
+    const countCols = Math.max(0, Math.floor(pWid / currentWidth));
 
     if (countPerRow <= 0 || countCols <= 0) {
       break;
@@ -327,9 +327,9 @@ function render3DFromResult(best, pallet) {
         });
 
         const boxMesh = new THREE.Mesh(geometry, material);
-        const x = -palletLength / 2 + currentLength / 2 + i * currentLength;
-        const z = -palletWidth / 2 + currentWidth / 2 + j * currentWidth;
-        const y = palletThickness + boxHeight / 2 + (Math.floor(created / best.boxesPerLayer)) * boxHeight;
+        const x = -pLen / 2 + currentLength / 2 + i * currentLength;
+        const z = -pWid / 2 + currentWidth / 2 + j * currentWidth;
+        const y = pThick + boxHeight / 2 + (Math.floor(created / best.boxesPerLayer)) * boxHeight;
 
         boxMesh.position.set(x, y, z);
         palletGroup.add(boxMesh);
