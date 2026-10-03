@@ -9,6 +9,8 @@ const form = document.getElementById('calculator-form');
 const resultBox = document.getElementById('result');
 const exampleButton = document.getElementById('load-example');
 
+let scene, camera, renderer, palletGroup;
+
 function getInputs() {
   const box = {
     length: parseFloat(document.getElementById('box-length').value),
@@ -102,6 +104,126 @@ function getBestOrientation(box, pallet) {
   return valid[0];
 }
 
+function init3DScene() {
+  const container = document.getElementById('canvas-container');
+  if (!container) return;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf2f7ff);
+
+  camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(2.4, 2.4, 4.5);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  directionalLight.position.set(3, 5, 4);
+  scene.add(directionalLight);
+
+  const grid = new THREE.GridHelper(6, 20, 0x9bb7d4, 0xc8d9ea);
+  grid.position.y = 0;
+  scene.add(grid);
+
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(5, 5),
+    new THREE.MeshStandardMaterial({ color: 0xeaf2ff, side: THREE.DoubleSide })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -0.01;
+  scene.add(floor);
+
+  palletGroup = new THREE.Group();
+  scene.add(palletGroup);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (palletGroup) {
+      palletGroup.rotation.y += 0.005;
+    }
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+
+function clearGroup(group) {
+  while (group.children.length) {
+    const child = group.children.pop();
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) {
+      if (Array.isArray(child.material)) {
+        child.material.forEach((material) => material.dispose());
+      } else {
+        child.material.dispose();
+      }
+    }
+  }
+}
+
+function render3DFromResult(best) {
+  if (!scene) {
+    init3DScene();
+  }
+
+  if (!palletGroup) return;
+
+  clearGroup(palletGroup);
+
+  const palletLength = parseFloat(document.getElementById('pallet-length').value);
+  const palletWidth = parseFloat(document.getElementById('pallet-width').value);
+  const palletThickness = parseFloat(document.getElementById('pallet-thickness').value);
+
+  const palletGeometry = new THREE.BoxGeometry(palletLength, palletThickness, palletWidth);
+  const palletMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8b5e3c,
+    roughness: 0.85,
+    metalness: 0.08,
+  });
+
+  const palletMesh = new THREE.Mesh(palletGeometry, palletMaterial);
+  palletMesh.position.y = palletThickness / 2;
+  palletGroup.add(palletMesh);
+
+  const boxLength = best.x;
+  const boxWidth = best.y;
+  const boxHeight = best.z;
+  const rows = Math.floor(palletLength / boxLength) || 1;
+  const cols = Math.floor(palletWidth / boxWidth) || 1;
+  let created = 0;
+
+  for (let layer = 0; layer < best.layers; layer++) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (created >= best.totalBoxes) break;
+
+        const geometry = new THREE.BoxGeometry(boxLength, boxHeight, boxWidth);
+        const material = new THREE.MeshStandardMaterial({
+          color: new THREE.Color().setHSL((created % 8) / 8, 0.7, 0.6),
+          roughness: 0.45,
+          metalness: 0.12,
+        });
+
+        const boxMesh = new THREE.Mesh(geometry, material);
+        const x = -palletLength / 2 + boxLength / 2 + row * boxLength;
+        const z = -palletWidth / 2 + boxWidth / 2 + col * boxWidth;
+        const y = palletThickness + boxHeight / 2 + layer * boxHeight;
+
+        boxMesh.position.set(x, y, z);
+        palletGroup.add(boxMesh);
+        created += 1;
+      }
+    }
+  }
+
+  palletGroup.rotation.y = Math.PI / 5;
+}
+
 function calculateLayout() {
   const { box, pallet } = getInputs();
 
@@ -146,10 +268,8 @@ function calculateLayout() {
     return;
   }
 
-  const palletVolume = pallet.length * pallet.width * pallet.thickness;
   const boxVolume = box.length * box.width * box.height;
   const utilization = (best.totalBoxes * boxVolume) / (pallet.length * pallet.width * pallet.maxHeight) * 100;
-
   const orientationText = `(${formatNumber(best.x)} × ${formatNumber(best.y)} × ${formatNumber(best.z)}) m`;
 
   resultBox.innerHTML = `
@@ -189,6 +309,8 @@ function calculateLayout() {
       <li>Las capas son todas iguales para mantener la estructura uniforme.</li>
     </ul>
   `;
+
+  render3DFromResult(best);
 }
 
 form.addEventListener('submit', function (event) {
@@ -207,4 +329,14 @@ exampleButton.addEventListener('click', () => {
   calculateLayout();
 });
 
+window.addEventListener('resize', () => {
+  if (!renderer || !camera) return;
+  const container = document.getElementById('canvas-container');
+  if (!container) return;
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+init3DScene();
 calculateLayout();
