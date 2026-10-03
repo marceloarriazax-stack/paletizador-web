@@ -63,24 +63,27 @@ function permuteDimensions(dimensions) {
   return variants;
 }
 
-function getPatternLayerBoxes(pallet, variant) {
-  const baseA = {
-    x: variant.x,
-    y: variant.y,
-    count: Math.max(0, Math.floor(pallet.length / variant.x) * Math.floor(pallet.width / variant.y)),
-  };
+function getAlternatingPatternCount(pallet, variant) {
+  if (variant.x <= 0 || variant.y <= 0) return 0;
 
-  const baseB = {
-    x: variant.y,
-    y: variant.x,
-    count: Math.max(0, Math.floor(pallet.length / variant.y) * Math.floor(pallet.width / variant.x)),
-  };
+  const countA = Math.floor(pallet.length / variant.x) * Math.floor(pallet.width / variant.y);
+  const countB = Math.floor(pallet.length / variant.y) * Math.floor(pallet.width / variant.x);
 
-  if (variant.x === variant.y) {
-    return baseA.count;
+  const rowPatternCountA = Math.max(1, Math.floor(pallet.width / variant.y));
+  const rowPatternCountB = Math.max(1, Math.floor(pallet.width / variant.x));
+
+  const rows = Math.max(1, Math.floor(pallet.length / Math.min(variant.x, variant.y)));
+  let total = 0;
+
+  for (let row = 0; row < rows; row++) {
+    const useRotated = row % 2 === 1 && variant.x !== variant.y;
+    const currentLength = useRotated ? variant.y : variant.x;
+    const currentWidth = useRotated ? variant.x : variant.y;
+    const boxesInRow = Math.floor(pallet.length / currentLength) * Math.floor(pallet.width / currentWidth);
+    total += boxesInRow;
   }
 
-  return baseA.count + baseB.count;
+  return total;
 }
 
 function getBestOrientation(box, pallet) {
@@ -103,7 +106,7 @@ function getBestOrientation(box, pallet) {
       continue;
     }
 
-    const boxesPerLayer = getPatternLayerBoxes(pallet, variant);
+    const boxesPerLayer = getAlternatingPatternCount(pallet, variant);
     if (boxesPerLayer <= 0) {
       continue;
     }
@@ -292,17 +295,16 @@ function render3DFromResult(best) {
   const boxLength = best.x;
   const boxWidth = best.y;
   const boxHeight = best.z;
+  const rows = Math.max(1, Math.floor(palletLength / Math.min(boxLength, boxWidth)));
   let created = 0;
-
-  const rows = Math.max(1, Math.ceil(Math.max(palletLength, palletWidth) / Math.min(boxLength, boxWidth)));
 
   for (let layer = 0; layer < best.layers; layer++) {
     for (let row = 0; row < rows; row++) {
-      const isRotated = row % 2 === 1 && boxLength !== boxWidth;
-      const currentLength = isRotated ? boxWidth : boxLength;
-      const currentWidth = isRotated ? boxLength : boxWidth;
-      const countPerRow = Math.max(1, Math.floor(palletLength / currentLength));
-      const countCols = Math.max(1, Math.floor(palletWidth / currentWidth));
+      const useRotated = row % 2 === 1 && boxLength !== boxWidth;
+      const currentLength = useRotated ? boxWidth : boxLength;
+      const currentWidth = useRotated ? boxLength : boxWidth;
+      const countPerRow = Math.max(1, Math.floor(pallet.length / currentLength));
+      const countCols = Math.max(1, Math.floor(pallet.width / currentWidth));
 
       for (let i = 0; i < countPerRow; i++) {
         for (let j = 0; j < countCols; j++) {
@@ -427,9 +429,9 @@ form.addEventListener('submit', function (event) {
 });
 
 exampleButton.addEventListener('click', () => {
-  document.getElementById('box-length').value = '0.4';
-  document.getElementById('box-width').value = '0.3';
-  document.getElementById('box-height').value = '0.2';
+  document.getElementById('box-length').value = '0.6';
+  document.getElementById('box-width').value = '0.4';
+  document.getElementById('box-height').value = '0.25';
   document.getElementById('pallet-length').value = '1.2';
   document.getElementById('pallet-width').value = '1.0';
   document.getElementById('pallet-thickness').value = '0.13';
