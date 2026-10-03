@@ -108,21 +108,34 @@ function init3DScene() {
   const container = document.getElementById('canvas-container');
   if (!container) return;
 
+  if (typeof THREE === 'undefined') {
+    console.error('Three.js no está cargado. Revisa la CDN o el acceso a internet.');
+    container.innerHTML = '<p class="muted">No se pudo cargar la vista 3D.</p>';
+    return;
+  }
+
+  if (!container.clientWidth || !container.clientHeight) {
+    container.style.height = '500px';
+  }
+
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf2f7ff);
 
   camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-  camera.position.set(2.4, 2.4, 4.5);
+  camera.position.set(2.8, 2.8, 5.4);
+  camera.lookAt(0, 0.7, 0);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  container.innerHTML = '';
   container.appendChild(renderer.domElement);
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
   scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.3);
   directionalLight.position.set(3, 5, 4);
   scene.add(directionalLight);
 
@@ -131,7 +144,7 @@ function init3DScene() {
   scene.add(grid);
 
   const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(5, 5),
+    new THREE.PlaneGeometry(6, 6),
     new THREE.MeshStandardMaterial({ color: 0xeaf2ff, side: THREE.DoubleSide })
   );
   floor.rotation.x = -Math.PI / 2;
@@ -144,7 +157,7 @@ function init3DScene() {
   function animate() {
     requestAnimationFrame(animate);
     if (palletGroup) {
-      palletGroup.rotation.y += 0.005;
+      palletGroup.rotation.y += 0.006;
     }
     renderer.render(scene, camera);
   }
@@ -171,7 +184,7 @@ function render3DFromResult(best) {
     init3DScene();
   }
 
-  if (!palletGroup) return;
+  if (!palletGroup || !renderer || !camera) return;
 
   clearGroup(palletGroup);
 
@@ -193,8 +206,8 @@ function render3DFromResult(best) {
   const boxLength = best.x;
   const boxWidth = best.y;
   const boxHeight = best.z;
-  const rows = Math.floor(palletLength / boxLength) || 1;
-  const cols = Math.floor(palletWidth / boxWidth) || 1;
+  const rows = Math.max(1, Math.floor(palletLength / boxLength));
+  const cols = Math.max(1, Math.floor(palletWidth / boxWidth));
   let created = 0;
 
   for (let layer = 0; layer < best.layers; layer++) {
@@ -222,6 +235,8 @@ function render3DFromResult(best) {
   }
 
   palletGroup.rotation.y = Math.PI / 5;
+  camera.lookAt(0, 0.7, 0);
+  renderer.render(scene, camera);
 }
 
 function calculateLayout() {
@@ -333,9 +348,11 @@ window.addEventListener('resize', () => {
   if (!renderer || !camera) return;
   const container = document.getElementById('canvas-container');
   if (!container) return;
-  camera.aspect = container.clientWidth / container.clientHeight;
+  const width = container.clientWidth || 700;
+  const height = container.clientHeight || 500;
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setSize(width, height);
 });
 
 init3DScene();
