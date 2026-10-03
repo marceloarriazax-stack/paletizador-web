@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,22 +6,31 @@
 
 <title>Simulador de Pallet</title>
 
+<!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
 
+/* =========================================================
+   VARIABLES
+========================================================= */
+
 :root {
-    --bg: #eef1f5;
+    --background: #eef1f5;
     --panel: #ffffff;
     --border: #dfe3e8;
     --text: #20252b;
-    --muted: #707780;
-    --primary: #1f2937;
-    --accent: #2563eb;
-    --accent-hover: #1d4ed8;
-    --success: #15803d;
-    --shadow: 0 10px 30px rgba(0,0,0,.12);
+    --muted: #737b84;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --shadow: 0 12px 35px rgba(0,0,0,.14);
 }
+
+
+/* =========================================================
+   GENERAL
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -30,196 +38,285 @@
 
 html,
 body {
+
     margin: 0;
+
     width: 100%;
     height: 100%;
+
     overflow: hidden;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: var(--bg);
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+
     color: var(--text);
 }
 
+
 /* =========================================================
-   CONTENEDOR PRINCIPAL
+   APP
 ========================================================= */
 
 #app {
+
     width: 100%;
     height: 100%;
+
     position: relative;
+
 }
+
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
+canvas {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+}
+
 
 /* =========================================================
    BARRA SUPERIOR
 ========================================================= */
 
 #topbar {
+
     position: absolute;
+
     top: 0;
     left: 0;
     right: 0;
+
     height: 64px;
 
-    background: rgba(255,255,255,.94);
-    backdrop-filter: blur(10px);
+    background:
+        rgba(255,255,255,.94);
 
-    border-bottom: 1px solid var(--border);
+    backdrop-filter:
+        blur(10px);
+
+    border-bottom:
+        1px solid var(--border);
 
     display: flex;
+
     align-items: center;
 
-    padding: 0 24px;
+    padding: 0 22px;
 
-    z-index: 10;
+    z-index: 20;
 
-    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    box-shadow:
+        0 2px 12px rgba(0,0,0,.06);
+
 }
 
+
 .logo {
+
     width: 38px;
     height: 38px;
 
     border-radius: 9px;
 
-    background: #1f2937;
+    background:
+        #1f2937;
 
     color: white;
 
     display: flex;
-    align-items: center;
+
     justify-content: center;
 
+    align-items: center;
+
     font-weight: 700;
-    font-size: 18px;
+
+    font-size: 17px;
 
     margin-right: 12px;
+
 }
+
 
 .title-area h1 {
+
     margin: 0;
+
     font-size: 18px;
+
     font-weight: 650;
+
 }
+
 
 .title-area span {
-    font-size: 12px;
+
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 11px;
+
     color: var(--muted);
+
 }
 
+
 /* =========================================================
-   PANEL LATERAL
+   PANEL
 ========================================================= */
 
 #controls {
 
     position: absolute;
 
-    top: 84px;
+    top: 82px;
     left: 18px;
 
     width: 340px;
-    max-height: calc(100vh - 102px);
 
-    background: rgba(255,255,255,.97);
+    max-height:
+        calc(100vh - 100px);
 
-    border: 1px solid rgba(0,0,0,.08);
+    overflow-y: auto;
 
-    border-radius: 14px;
+    background:
+        rgba(255,255,255,.97);
 
-    box-shadow: var(--shadow);
+    border:
+        1px solid rgba(0,0,0,.08);
+
+    border-radius: 15px;
+
+    box-shadow:
+        var(--shadow);
 
     padding: 18px;
 
-    z-index: 5;
+    z-index: 10;
 
-    overflow-y: auto;
 }
+
 
 /* Scroll */
 
 #controls::-webkit-scrollbar {
+
     width: 6px;
+
 }
 
 #controls::-webkit-scrollbar-track {
+
     background: transparent;
+
 }
 
 #controls::-webkit-scrollbar-thumb {
-    background: #c8cdd3;
-    border-radius: 10px;
+
+    background: #cbd0d6;
+
+    border-radius: 20px;
+
 }
 
+
 /* =========================================================
-   SECCIONES
+   SECTION
 ========================================================= */
 
 .section {
-    margin-bottom: 18px;
+
+    margin-bottom: 17px;
+
 }
 
-.section:last-child {
-    margin-bottom: 0;
-}
 
 .section-title {
 
     display: flex;
+
     align-items: center;
 
     gap: 8px;
 
-    font-size: 13px;
+    margin-bottom: 13px;
+
+    font-size: 12px;
+
     font-weight: 700;
 
     text-transform: uppercase;
 
     letter-spacing: .5px;
 
-    color: #3d4650;
+    color: #4b5563;
 
-    margin-bottom: 12px;
 }
+
 
 .section-number {
 
-    width: 22px;
-    height: 22px;
+    width: 23px;
+    height: 23px;
 
-    background: #eef2ff;
+    display: flex;
 
-    color: #3156c9;
+    align-items: center;
+
+    justify-content: center;
 
     border-radius: 6px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background:
+        #eff4ff;
 
-    font-size: 11px;
+    color:
+        #315bc9;
+
+    font-size: 10px;
+
     font-weight: 700;
+
 }
+
 
 /* =========================================================
    CAMPOS
 ========================================================= */
 
 .field {
+
     margin-bottom: 11px;
+
 }
+
 
 .field label {
 
     display: block;
 
-    font-size: 12px;
+    margin-bottom: 5px;
 
-    color: #5d6670;
+    font-size: 12px;
 
     font-weight: 600;
 
-    margin-bottom: 5px;
+    color: #5e6670;
+
 }
+
 
 .input {
 
@@ -227,46 +324,58 @@ body {
 
     height: 39px;
 
-    border: 1px solid #d6dbe1;
+    border:
+        1px solid #d5dae0;
 
     border-radius: 8px;
 
-    padding: 0 11px;
+    background: white;
+
+    padding:
+        0 11px;
 
     font-size: 13px;
 
     color: #20252b;
 
-    background: #fff;
-
     outline: none;
 
-    transition: .15s ease;
+    transition: .15s;
+
 }
 
+
 .input:hover {
-    border-color: #b9c0c8;
+
+    border-color:
+        #b8bec6;
+
 }
+
 
 .input:focus {
 
-    border-color: var(--accent);
+    border-color:
+        var(--primary);
 
-    box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+    box-shadow:
+        0 0 0 3px
+        rgba(37,99,235,.10);
+
 }
 
-/* =========================================================
-   DIMENSIONES
-========================================================= */
 
-.dimension-help {
-
-    font-size: 11px;
-
-    color: #8a9199;
+.help {
 
     margin-top: 4px;
+
+    font-size: 10px;
+
+    color:
+        #8b929a;
+
 }
+
 
 /* =========================================================
    BOTONES
@@ -274,14 +383,14 @@ body {
 
 button {
 
+    font-family: inherit;
+
     border: none;
 
     cursor: pointer;
 
-    font-family: inherit;
-
-    transition: .15s ease;
 }
+
 
 .primary-button {
 
@@ -291,7 +400,8 @@ button {
 
     border-radius: 8px;
 
-    background: var(--accent);
+    background:
+        var(--primary);
 
     color: white;
 
@@ -299,19 +409,29 @@ button {
 
     font-weight: 650;
 
-    margin-top: 5px;
+    box-shadow:
+        0 4px 10px
+        rgba(37,99,235,.20);
 
-    box-shadow: 0 4px 10px rgba(37,99,235,.18);
+    transition: .15s;
+
 }
+
 
 .primary-button:hover {
 
-    background: var(--accent-hover);
+    background:
+        var(--primary-dark);
 
-    transform: translateY(-1px);
+    transform:
+        translateY(-1px);
 
-    box-shadow: 0 6px 14px rgba(37,99,235,.25);
+    box-shadow:
+        0 7px 15px
+        rgba(37,99,235,.25);
+
 }
+
 
 .secondary-button {
 
@@ -321,20 +441,28 @@ button {
 
     border-radius: 8px;
 
-    background: #f3f4f6;
+    background:
+        #f1f3f5;
 
-    color: #374151;
+    color:
+        #374151;
 
-    font-size: 13px;
+    font-size: 12px;
 
     font-weight: 600;
 
-    margin-top: 4px;
+    transition: .15s;
+
 }
 
+
 .secondary-button:hover {
-    background: #e5e7eb;
+
+    background:
+        #e5e7eb;
+
 }
+
 
 /* =========================================================
    SEPARADOR
@@ -344,10 +472,14 @@ button {
 
     height: 1px;
 
-    background: var(--border);
+    background:
+        var(--border);
 
-    margin: 18px 0;
+    margin:
+        18px 0;
+
 }
+
 
 /* =========================================================
    RESULTADOS
@@ -355,40 +487,39 @@ button {
 
 #result-container {
 
-    background: #f8fafc;
+    background:
+        #f7f9fb;
 
-    border: 1px solid #e3e7ec;
+    border:
+        1px solid #e1e5ea;
 
-    border-radius: 10px;
+    border-radius:
+        10px;
 
-    padding: 12px;
+    padding:
+        12px;
 
-    margin-top: 8px;
 }
+
 
 .result-title {
 
-    font-size: 11px;
-
-    color: #737b84;
+    font-size: 10px;
 
     text-transform: uppercase;
 
-    letter-spacing: .5px;
+    letter-spacing: .6px;
 
     font-weight: 700;
 
-    margin-bottom: 8px;
+    color:
+        #7b838c;
+
+    margin-bottom:
+        8px;
+
 }
 
-#result {
-
-    font-size: 13px;
-
-    line-height: 1.7;
-
-    color: #27313a;
-}
 
 .result-row {
 
@@ -398,17 +529,33 @@ button {
 
     align-items: center;
 
-    padding: 3px 0;
+    padding:
+        4px 0;
+
 }
+
 
 .result-label {
-    color: #6b7280;
+
+    font-size: 12px;
+
+    color:
+        #707780;
+
 }
 
+
 .result-value {
+
+    font-size: 13px;
+
     font-weight: 700;
-    color: #1f2937;
+
+    color:
+        #1f2937;
+
 }
+
 
 /* =========================================================
    ESTADO
@@ -420,14 +567,17 @@ button {
 
     align-items: center;
 
-    gap: 6px;
+    gap: 7px;
 
     margin-top: 12px;
 
-    font-size: 11px;
+    font-size: 10px;
 
-    color: #6b7280;
+    color:
+        #7b838c;
+
 }
+
 
 .status-dot {
 
@@ -436,46 +586,104 @@ button {
 
     border-radius: 50%;
 
-    background: #22c55e;
+    background:
+        var(--success);
 
-    box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+    box-shadow:
+        0 0 0 3px
+        rgba(22,163,74,.12);
+
 }
 
+
 /* =========================================================
-   INDICADOR DE AYUDA
+   AYUDA
 ========================================================= */
 
 #instructions {
 
     position: absolute;
 
-    right: 20px;
-    bottom: 18px;
+    right: 18px;
+    bottom: 17px;
 
-    background: rgba(255,255,255,.9);
+    background:
+        rgba(255,255,255,.92);
 
-    backdrop-filter: blur(8px);
+    backdrop-filter:
+        blur(8px);
 
-    border: 1px solid rgba(0,0,0,.08);
+    border:
+        1px solid rgba(0,0,0,.08);
 
-    border-radius: 8px;
+    border-radius:
+        8px;
 
-    padding: 9px 13px;
+    padding:
+        9px 13px;
 
-    font-size: 11px;
+    color:
+        #6b7280;
 
-    color: #6b7280;
+    font-size:
+        11px;
 
-    z-index: 4;
+    z-index: 5;
 
-    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    box-shadow:
+        0 4px 14px
+        rgba(0,0,0,.08);
+
 }
+
+
+/* =========================================================
+   BOTÓN CENTRAR
+========================================================= */
+
+#centerView {
+
+    position: absolute;
+
+    right: 18px;
+    top: 82px;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255,255,255,.94);
+
+    border:
+        1px solid rgba(0,0,0,.08);
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.10);
+
+    font-size: 18px;
+
+    z-index: 10;
+
+}
+
+
+#centerView:hover {
+
+    background: white;
+
+    transform:
+        translateY(-1px);
+
+}
+
 
 /* =========================================================
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 700px) {
+@media(max-width:700px) {
 
     #controls {
 
@@ -484,11 +692,15 @@ button {
 
         width: auto;
 
-        max-height: 55vh;
+        max-height: 52vh;
+
     }
 
+
     #instructions {
+
         display: none;
+
     }
 
 }
@@ -496,9 +708,11 @@ button {
 </style>
 </head>
 
+
 <body>
 
 <div id="app">
+
 
     <!-- =====================================================
          BARRA SUPERIOR
@@ -512,7 +726,9 @@ button {
 
         <div class="title-area">
 
-            <h1>Simulador de Pallet</h1>
+            <h1>
+                Simulador de Pallet
+            </h1>
 
             <span>
                 Visualización y cálculo de carga
@@ -524,12 +740,13 @@ button {
 
 
     <!-- =====================================================
-         PANEL DE CONTROL
+         PANEL
     ====================================================== -->
 
     <div id="controls">
 
-        <!-- CAJAS -->
+
+        <!-- CAJA -->
 
         <div class="section">
 
@@ -557,8 +774,8 @@ button {
                     placeholder="82.00 26.00 36.00"
                 >
 
-                <div class="dimension-help">
-                    Largo × Ancho × Alto · centímetros
+                <div class="help">
+                    Largo · Ancho · Alto en centímetros
                 </div>
 
             </div>
@@ -613,14 +830,14 @@ button {
             <div class="field">
 
                 <label>
-                    Ancho
+                    Ancho (m)
                 </label>
 
                 <input
                     type="number"
                     id="palletWidthInput"
                     class="input"
-                    value="1.1"
+                    value="1.10"
                     step="0.05"
                     min="0.05"
                 >
@@ -631,14 +848,14 @@ button {
             <div class="field">
 
                 <label>
-                    Largo
+                    Largo (m)
                 </label>
 
                 <input
                     type="number"
                     id="palletDepthInput"
                     class="input"
-                    value="1.2"
+                    value="1.20"
                     step="0.05"
                     min="0.05"
                 >
@@ -649,7 +866,7 @@ button {
             <div class="field">
 
                 <label>
-                    Altura del pallet
+                    Altura del pallet (m)
                 </label>
 
                 <input
@@ -668,7 +885,7 @@ button {
                 id="updatePallet"
                 class="secondary-button"
             >
-                Actualizar dimensiones
+                Actualizar pallet
             </button>
 
         </div>
@@ -685,62 +902,67 @@ button {
                 Resumen de carga
             </div>
 
-            <div id="result">
 
-                <div class="result-row">
-                    <span class="result-label">
-                        Cajas
-                    </span>
+            <div class="result-row">
 
-                    <span
-                        class="result-value"
-                        id="resultBoxes"
-                    >
-                        0
-                    </span>
-                </div>
+                <span class="result-label">
+                    Cajas
+                </span>
 
+                <span
+                    id="resultBoxes"
+                    class="result-value"
+                >
+                    0
+                </span>
 
-                <div class="result-row">
-                    <span class="result-label">
-                        Capas
-                    </span>
-
-                    <span
-                        class="result-value"
-                        id="resultLayers"
-                    >
-                        0
-                    </span>
-                </div>
+            </div>
 
 
-                <div class="result-row">
-                    <span class="result-label">
-                        Ocupación
-                    </span>
+            <div class="result-row">
 
-                    <span
-                        class="result-value"
-                        id="resultOccupancy"
-                    >
-                        0%
-                    </span>
-                </div>
+                <span class="result-label">
+                    Capas
+                </span>
+
+                <span
+                    id="resultLayers"
+                    class="result-value"
+                >
+                    0
+                </span>
+
+            </div>
 
 
-                <div class="result-row">
-                    <span class="result-label">
-                        Peso total
-                    </span>
+            <div class="result-row">
 
-                    <span
-                        class="result-value"
-                        id="resultWeight"
-                    >
-                        0 kg
-                    </span>
-                </div>
+                <span class="result-label">
+                    Ocupación
+                </span>
+
+                <span
+                    id="resultOccupancy"
+                    class="result-value"
+                >
+                    0%
+                </span>
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label">
+                    Peso total
+                </span>
+
+                <span
+                    id="resultWeight"
+                    class="result-value"
+                >
+                    0 kg
+                </span>
 
             </div>
 
@@ -758,10 +980,28 @@ button {
     </div>
 
 
-    <!-- AYUDA -->
+    <!-- =====================================================
+         BOTÓN CENTRAR
+    ====================================================== -->
+
+    <button
+        id="centerView"
+        title="Centrar vista"
+    >
+        ⌂
+    </button>
+
+
+    <!-- =====================================================
+         AYUDA
+    ====================================================== -->
 
     <div id="instructions">
-        🖱️ Arrastra para rotar la vista del pallet
+
+        🖱️ Arrastra para rotar
+        &nbsp;·&nbsp;
+        🔍 Rueda para zoom
+
     </div>
 
 </div>
@@ -770,34 +1010,66 @@ button {
 <script>
 
 /* =========================================================
-   THREE.JS
+   ESCENA
 ========================================================= */
 
-var scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0xf0f2f5);
-
-
-var camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-);
+var scene =
+    new THREE.Scene();
 
 
-var renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+scene.background =
+    new THREE.Color(
+        0xeef1f5
+    );
+
+
+/* =========================================================
+   CÁMARA
+========================================================= */
+
+var camera =
+    new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1000
+    );
+
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+var renderer =
+    new THREE.WebGLRenderer({
+
+        antialias: true
+
+    });
+
 
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
+
 renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
+
+
+renderer.shadowMap.enabled =
+    true;
+
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
 
 document.body.appendChild(
     renderer.domElement
@@ -814,267 +1086,448 @@ var ambientLight =
         0.65
     );
 
-scene.add(ambientLight);
+
+scene.add(
+    ambientLight
+);
 
 
-var dirLight =
+var directionalLight =
     new THREE.DirectionalLight(
         0xffffff,
-        0.9
+        1
     );
 
-dirLight.position.set(
-    5,
-    10,
+
+directionalLight.position.set(
+    4,
+    8,
     5
 );
 
-scene.add(dirLight);
+
+directionalLight.castShadow =
+    true;
+
+
+directionalLight.shadow.mapSize.width =
+    2048;
+
+
+directionalLight.shadow.mapSize.height =
+    2048;
+
+
+scene.add(
+    directionalLight
+);
+
+
+/* =========================================================
+   LUZ DE RELLENO
+========================================================= */
+
+var fillLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        0.35
+    );
+
+
+fillLight.position.set(
+    -4,
+    4,
+    -4
+);
+
+
+scene.add(
+    fillLight
+);
 
 
 /* =========================================================
    PALLET
 ========================================================= */
 
-var palletWidth = 1.1;
-var palletDepth = 1.2;
-var palletHeight = 0.15;
+var palletWidth =
+    1.10;
+
+var palletDepth =
+    1.20;
+
+var palletHeight =
+    0.15;
+
+
+var pallet;
 
 
 var palletMaterial =
     new THREE.MeshLambertMaterial({
-        color: 0x8b5a2b
+
+        color:
+            0x8b5a2b
+
     });
 
 
-var palletGeometry =
-    new THREE.BoxGeometry(
-        palletWidth,
-        palletHeight,
-        palletDepth
+function createPallet() {
+
+    if (pallet) {
+
+        scene.remove(
+            pallet
+        );
+
+    }
+
+
+    var geometry =
+        new THREE.BoxGeometry(
+
+            palletWidth,
+
+            palletHeight,
+
+            palletDepth
+
+        );
+
+
+    pallet =
+        new THREE.Mesh(
+            geometry,
+            palletMaterial
+        );
+
+
+    pallet.position.y =
+        palletHeight / 2;
+
+
+    pallet.castShadow =
+        true;
+
+
+    pallet.receiveShadow =
+        true;
+
+
+    scene.add(
+        pallet
     );
 
-
-var pallet =
-    new THREE.Mesh(
-        palletGeometry,
-        palletMaterial
-    );
+}
 
 
-pallet.position.y =
-    -palletHeight / 2;
-
-
-scene.add(pallet);
+createPallet();
 
 
 /* =========================================================
    PISO
 ========================================================= */
 
-var grid =
-    new THREE.GridHelper(
-        5,
+var floorGeometry =
+    new THREE.PlaneGeometry(
+        20,
         20
     );
 
-grid.position.y = -0.151;
 
-scene.add(grid);
+var floorMaterial =
+    new THREE.MeshLambertMaterial({
+
+        color:
+            0xe2e6eb
+
+    });
+
+
+var floor =
+    new THREE.Mesh(
+        floorGeometry,
+        floorMaterial
+    );
+
+
+floor.rotation.x =
+    -Math.PI / 2;
+
+
+floor.position.y =
+    -0.001;
+
+
+floor.receiveShadow =
+    true;
+
+
+scene.add(
+    floor
+);
 
 
 /* =========================================================
-   CÁMARA
+   GRID
 ========================================================= */
 
-var radius = 3;
+var grid =
+    new THREE.GridHelper(
+        10,
+        20,
+        0xb7bec7,
+        0xd5dae0
+    );
 
-var angle = 0;
 
-var pitch = 0.3;
-
-var pitchMin = -1;
-var pitchMax = 1;
+grid.position.y =
+    0.002;
 
 
-camera.position.set(
-    radius * Math.cos(angle),
-    1.5,
-    radius * Math.sin(angle)
-);
-
-camera.lookAt(
-    new THREE.Vector3(
-        0,
-        0,
-        0
-    )
+scene.add(
+    grid
 );
 
 
 /* =========================================================
-   CONTROL DE CÁMARA
+   CÁMARA / ÓRBITA MANUAL
 ========================================================= */
 
-var isDragging = false;
+var cameraRadius =
+    3.4;
 
-var previousMouseX = 0;
-var previousMouseY = 0;
+var cameraAngle =
+    0.75;
+
+var cameraPitch =
+    0.55;
 
 
-document.addEventListener(
+var minRadius =
+    1.7;
+
+var maxRadius =
+    7;
+
+
+function updateCamera() {
+
+    var x =
+        cameraRadius *
+        Math.cos(cameraPitch) *
+        Math.cos(cameraAngle);
+
+
+    var y =
+        cameraRadius *
+        Math.sin(cameraPitch);
+
+
+    var z =
+        cameraRadius *
+        Math.cos(cameraPitch) *
+        Math.sin(cameraAngle);
+
+
+    camera.position.set(
+        x,
+        y,
+        z
+    );
+
+
+    camera.lookAt(
+        new THREE.Vector3(
+            0,
+            0.7,
+            0
+        )
+    );
+
+}
+
+
+updateCamera();
+
+
+/* =========================================================
+   MOUSE ROTACIÓN
+========================================================= */
+
+var dragging =
+    false;
+
+var lastX =
+    0;
+
+var lastY =
+    0;
+
+
+renderer.domElement.addEventListener(
     "mousedown",
     function(event) {
 
-        if (event.button === 0) {
+        dragging =
+            true;
 
-            isDragging = true;
+        lastX =
+            event.clientX;
 
-            previousMouseX =
-                event.clientX;
+        lastY =
+            event.clientY;
 
-            previousMouseY =
-                event.clientY;
-        }
+        renderer.domElement.style.cursor =
+            "grabbing";
 
     }
 );
 
 
-document.addEventListener(
+window.addEventListener(
     "mouseup",
-    function(event) {
+    function() {
 
-        if (event.button === 0) {
+        dragging =
+            false;
 
-            isDragging = false;
-
-        }
+        renderer.domElement.style.cursor =
+            "grab";
 
     }
 );
 
 
-document.addEventListener(
+renderer.domElement.addEventListener(
     "mousemove",
     function(event) {
 
-        if (!isDragging) return;
+        if (!dragging)
+            return;
 
 
-        var deltaX =
+        var dx =
             event.clientX -
-            previousMouseX;
+            lastX;
 
 
-        var deltaY =
+        var dy =
             event.clientY -
-            previousMouseY;
+            lastY;
 
 
-        previousMouseX =
+        lastX =
             event.clientX;
 
-        previousMouseY =
+
+        lastY =
             event.clientY;
 
 
-        angle +=
-            deltaX * 0.005;
+        cameraAngle -=
+            dx * 0.006;
 
 
-        pitch -=
-            deltaY * 0.003;
+        cameraPitch +=
+            dy * 0.004;
 
 
-        pitch =
+        cameraPitch =
             Math.max(
-                pitchMin,
+                0.15,
                 Math.min(
-                    pitchMax,
-                    pitch
+                    1.35,
+                    cameraPitch
                 )
             );
 
 
-        var x =
-            radius *
-            Math.cos(pitch) *
-            Math.cos(angle);
+        updateCamera();
+
+    }
+);
 
 
-        var y =
-            radius *
-            Math.sin(pitch);
+renderer.domElement.style.cursor =
+    "grab";
 
 
-        var z =
-            radius *
-            Math.cos(pitch) *
-            Math.sin(angle);
+/* =========================================================
+   ZOOM
+========================================================= */
+
+renderer.domElement.addEventListener(
+    "wheel",
+    function(event) {
+
+        event.preventDefault();
 
 
-        camera.position.set(
-            x,
-            y,
-            z
-        );
+        cameraRadius +=
+            event.deltaY * 0.0025;
 
 
-        camera.lookAt(
-            new THREE.Vector3(
-                0,
-                0,
-                0
+        cameraRadius =
+            Math.max(
+                minRadius,
+                Math.min(
+                    maxRadius,
+                    cameraRadius
+                )
+            );
+
+
+        updateCamera();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* =========================================================
+   ELIMINAR CAJAS
+========================================================= */
+
+function removeBoxes() {
+
+    for (
+        var i =
+        scene.children.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        var object =
+            scene.children[i];
+
+
+        if (
+            object.userData &&
+            (
+                object.userData.type ===
+                "box"
+
+                ||
+
+                object.userData.type ===
+                "edge"
             )
-        );
+        ) {
+
+            scene.remove(
+                object
+            );
+
+        }
 
     }
-);
 
-
-/* =========================================================
-   ANIMACIÓN
-========================================================= */
-
-function animate() {
-
-    requestAnimationFrame(
-        animate
-    );
-
-    renderer.render(
-        scene,
-        camera
-    );
 }
-
-animate();
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-window.addEventListener(
-    "resize",
-    function() {
-
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
-    }
-);
 
 
 /* =========================================================
@@ -1094,30 +1547,39 @@ function addBoxes() {
 
     var parts =
         input.split(
-            /[\s,]+/
+            /[\s,;]+/
         );
 
 
-    if (parts.length < 3) {
+    if (
+        parts.length < 3
+    ) {
 
         alert(
-            "Ingresa 3 valores: Largo, Ancho y Alto."
+            "Ingresa las dimensiones como:\n\nLargo Ancho Alto\n\nEjemplo:\n82 26 36"
         );
 
         return;
+
     }
 
 
     var boxD =
-        parseFloat(parts[0]) / 100;
+        parseFloat(
+            parts[0]
+        ) / 100;
 
 
     var boxW =
-        parseFloat(parts[1]) / 100;
+        parseFloat(
+            parts[1]
+        ) / 100;
 
 
     var boxH =
-        parseFloat(parts[2]) / 100;
+        parseFloat(
+            parts[2]
+        ) / 100;
 
 
     var boxWeight =
@@ -1143,10 +1605,11 @@ function addBoxes() {
     ) {
 
         alert(
-            "Las dimensiones ingresadas no son válidas."
+            "Las dimensiones de la caja no son válidas."
         );
 
         return;
+
     }
 
 
@@ -1156,59 +1619,27 @@ function addBoxes() {
     ) {
 
         alert(
-            "Ingresa un peso válido para la caja."
+            "Ingresa un peso válido."
         );
 
         return;
+
     }
 
 
     /* -----------------------------------------------------
-       ELIMINAR CAJAS ANTERIORES
+       LIMPIAR
     ----------------------------------------------------- */
 
-    for (
-        var i =
-        scene.children.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        if (
-
-            scene.children[i]
-            .userData &&
-
-            (
-
-                scene.children[i]
-                .userData.type === "box"
-
-                ||
-
-                scene.children[i]
-                .userData.type === "edge"
-
-            )
-
-        ) {
-
-            scene.remove(
-                scene.children[i]
-            );
-
-        }
-
-    }
+    removeBoxes();
 
 
     /* -----------------------------------------------------
        ALTURA MÁXIMA
     ----------------------------------------------------- */
 
-    var maxStackHeight = 1.50;
+    var maxStackHeight =
+        1.50;
 
 
     var maxLayers =
@@ -1218,19 +1649,34 @@ function addBoxes() {
         );
 
 
-    var totalBoxes = 0;
+    if (
+        maxLayers <= 0
+    ) {
+
+        alert(
+            "La altura de la caja supera la altura máxima de apilamiento."
+        );
+
+        return;
+
+    }
 
 
-    /* -----------------------------------------------------
+    var totalBoxes =
+        0;
+
+
+    /* =====================================================
        GENERAR CAPA
-    ----------------------------------------------------- */
+    ===================================================== */
 
     function generateLayer(
         yOffset,
         rotateLayer
     ) {
 
-        var occupied = [];
+        var occupied =
+            [];
 
 
         function fits(
@@ -1241,13 +1687,18 @@ function addBoxes() {
         ) {
 
             if (
-
                 x + w >
-                palletWidth ||
+                palletWidth
+            ) {
 
+                return false;
+
+            }
+
+
+            if (
                 z + d >
                 palletDepth
-
             ) {
 
                 return false;
@@ -1265,19 +1716,20 @@ function addBoxes() {
                     occupied[i];
 
 
-                if (
+                var overlap = !(
+                    x + w <= r.x ||
 
-                    !(
-                        x + w <= r.x ||
+                    x >=
+                    r.x + r.w ||
 
-                        x >= r.x + r.w ||
+                    z + d <= r.z ||
 
-                        z + d <= r.z ||
+                    z >=
+                    r.z + r.d
+                );
 
-                        z >= r.z + r.d
-                    )
 
-                ) {
+                if (overlap) {
 
                     return false;
 
@@ -1306,26 +1758,37 @@ function addBoxes() {
         ];
 
 
-        var step = 0.01;
+        var step =
+            0.01;
 
 
         for (
             var z = 0;
+
             z < palletDepth;
+
             z += step
         ) {
 
+
             for (
                 var x = 0;
+
                 x < palletWidth;
+
                 x += step
             ) {
 
+
                 for (
                     var oi = 0;
-                    oi < orientations.length;
+
+                    oi <
+                    orientations.length;
+
                     oi++
                 ) {
+
 
                     var o =
                         orientations[oi];
@@ -1340,19 +1803,24 @@ function addBoxes() {
                         )
                     ) {
 
-                        /* -----------------------------
+
+                        /* --------------------------------
                            CAJA
-                        ----------------------------- */
+                        -------------------------------- */
 
                         var geometry =
                             new THREE.BoxGeometry(
+
                                 o.w,
+
                                 boxH,
+
                                 o.d
+
                             );
 
 
-                        var solidMaterial =
+                        var material =
                             new THREE.MeshLambertMaterial({
 
                                 color:
@@ -1366,7 +1834,7 @@ function addBoxes() {
                         var box =
                             new THREE.Mesh(
                                 geometry,
-                                solidMaterial
+                                material
                             );
 
 
@@ -1376,8 +1844,9 @@ function addBoxes() {
                             x +
                             o.w / 2,
 
-                            boxH / 2 +
-                            yOffset,
+                            palletHeight +
+                            yOffset +
+                            boxH / 2,
 
                             -palletDepth / 2 +
                             z +
@@ -1386,68 +1855,102 @@ function addBoxes() {
                         );
 
 
+                        box.castShadow =
+                            true;
+
+
+                        box.receiveShadow =
+                            true;
+
+
                         box.userData = {
 
-                            type: "box"
-
-                        };
-
-
-                        scene.add(box);
-
-
-                        /* -----------------------------
-                           BORDES
-                        ----------------------------- */
-
-                        var wireMaterial =
-                            new THREE.MeshBasicMaterial({
-
-                                color: 0x263238,
-
-                                wireframe: true
-
-                            });
-
-
-                        var wireBox =
-                            new THREE.Mesh(
-                                geometry,
-                                wireMaterial
-                            );
-
-
-                        wireBox.position.copy(
-                            box.position
-                        );
-
-
-                        wireBox.userData = {
-
-                            type: "edge"
+                            type:
+                                "box"
 
                         };
 
 
                         scene.add(
-                            wireBox
+                            box
                         );
 
 
+                        /* --------------------------------
+                           BORDE DE LA CAJA
+                        -------------------------------- */
+
+                        var edgeMaterial =
+                            new THREE.MeshBasicMaterial({
+
+                                color:
+                                    0x263238,
+
+                                wireframe:
+                                    true
+
+                            });
+
+
+                        var edge =
+                            new THREE.Mesh(
+
+                                geometry,
+
+                                edgeMaterial
+
+                            );
+
+
+                        edge.position.copy(
+                            box.position
+                        );
+
+
+                        edge.userData = {
+
+                            type:
+                                "edge"
+
+                        };
+
+
+                        scene.add(
+                            edge
+                        );
+
+
+                        /* --------------------------------
+                           OCUPACIÓN
+                        -------------------------------- */
+
                         occupied.push({
 
-                            x: x,
+                            x:
+                                x,
 
-                            z: z,
+                            z:
+                                z,
 
-                            w: o.w,
+                            w:
+                                o.w,
 
-                            d: o.d
+                            d:
+                                o.d
 
                         });
 
 
                         totalBoxes++;
+
+
+                        /*
+                         * Importante:
+                         * una vez encontrada una orientación,
+                         * no seguimos probando la segunda.
+                         */
+
+                        break;
 
                     }
 
@@ -1460,21 +1963,23 @@ function addBoxes() {
     }
 
 
-    /* -----------------------------------------------------
-       CAPAS
-    ----------------------------------------------------- */
+    /* =====================================================
+       GENERAR TODAS LAS CAPAS
+    ===================================================== */
 
     for (
-        var h = 0;
-        h < maxLayers;
-        h++
+        var layer = 0;
+
+        layer < maxLayers;
+
+        layer++
     ) {
 
         generateLayer(
 
-            h * boxH,
+            layer * boxH,
 
-            h % 2 === 1
+            layer % 2 === 1
 
         );
 
@@ -1503,18 +2008,23 @@ function addBoxes() {
             boxVolume /
             palletVolume *
             100
-        ).toFixed(1);
+        );
+
+
+    occupancy =
+        Math.min(
+            occupancy,
+            100
+        );
 
 
     var totalWeight =
-        (
-            totalBoxes *
-            boxWeight
-        ).toFixed(2);
+        totalBoxes *
+        boxWeight;
 
 
     /* =====================================================
-       ACTUALIZAR INTERFAZ
+       MOSTRAR RESULTADOS
     ===================================================== */
 
     document
@@ -1538,7 +2048,8 @@ function addBoxes() {
             "resultOccupancy"
         )
         .textContent =
-        occupancy + "%";
+        occupancy.toFixed(1) +
+        "%";
 
 
     document
@@ -1546,13 +2057,25 @@ function addBoxes() {
             "resultWeight"
         )
         .textContent =
-        totalWeight + " kg";
+        totalWeight.toFixed(2) +
+        " kg";
+
+
+    document
+        .getElementById(
+            "status"
+        )
+        .innerHTML =
+
+        '<div class="status-dot"></div>' +
+
+        'Pallet generado correctamente';
 
 }
 
 
 /* =========================================================
-   BOTÓN GENERAR
+   GENERAR PALLET
 ========================================================= */
 
 document
@@ -1578,7 +2101,7 @@ document
         function() {
 
 
-            palletWidth =
+            var newWidth =
                 parseFloat(
                     document
                     .getElementById(
@@ -1588,7 +2111,7 @@ document
                 );
 
 
-            palletDepth =
+            var newDepth =
                 parseFloat(
                     document
                     .getElementById(
@@ -1598,7 +2121,7 @@ document
                 );
 
 
-            palletHeight =
+            var newHeight =
                 parseFloat(
                     document
                     .getElementById(
@@ -1608,43 +2131,159 @@ document
                 );
 
 
-            scene.remove(
-                pallet
-            );
+            if (
 
+                isNaN(newWidth) ||
+                isNaN(newDepth) ||
+                isNaN(newHeight) ||
 
-            palletGeometry =
-                new THREE.BoxGeometry(
-                    palletWidth,
-                    palletHeight,
-                    palletDepth
+                newWidth <= 0 ||
+                newDepth <= 0 ||
+                newHeight <= 0
+
+            ) {
+
+                alert(
+                    "Las dimensiones del pallet no son válidas."
                 );
 
+                return;
 
-            pallet =
-                new THREE.Mesh(
-                    palletGeometry,
-                    palletMaterial
-                );
+            }
 
 
-            pallet.position.y =
-                -palletHeight / 2;
+            palletWidth =
+                newWidth;
 
 
-            scene.add(
-                pallet
-            );
+            palletDepth =
+                newDepth;
 
 
-            addBoxes();
+            palletHeight =
+                newHeight;
+
+
+            createPallet();
+
+
+            /*
+             * Regenerar cajas si existen dimensiones.
+             */
+
+            var dimensions =
+                document
+                .getElementById(
+                    "boxDimensions"
+                )
+                .value
+                .trim();
+
+
+            var weight =
+                document
+                .getElementById(
+                    "boxWeight"
+                )
+                .value;
+
+
+            if (
+                dimensions &&
+                weight
+            ) {
+
+                addBoxes();
+
+            }
+
+
+            updateCamera();
 
         }
     );
+
+
+/* =========================================================
+   CENTRAR VISTA
+========================================================= */
+
+document
+    .getElementById(
+        "centerView"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+
+            cameraRadius =
+                3.4;
+
+
+            cameraAngle =
+                0.75;
+
+
+            cameraPitch =
+                0.55;
+
+
+            updateCamera();
+
+        }
+    );
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+animate();
+
 
 </script>
 
 </body>
 </html>
-
-
