@@ -11,6 +11,22 @@ const exampleButton = document.getElementById('load-example');
 
 let scene, camera, renderer, palletGroup;
 
+// Controles de cámara
+let cameraControls = {
+  isRotating: false,
+  previousMousePosition: { x: 0, y: 0 },
+  rotation: { x: 0, y: 0 },
+  zoom: 5.4,
+  minZoom: 2,
+  maxZoom: 15,
+};
+
+const cameraInitialPosition = {
+  distance: 5.4,
+  x: 2.8,
+  y: 2.8,
+};
+
 function getInputs() {
   const box = {
     length: parseFloat(document.getElementById('box-length').value),
@@ -104,6 +120,69 @@ function getBestOrientation(box, pallet) {
   return valid[0];
 }
 
+function setupCameraControls(container) {
+  // Mouse down
+  container.addEventListener('mousedown', (e) => {
+    cameraControls.isRotating = true;
+    cameraControls.previousMousePosition = { x: e.clientX, y: e.clientY };
+  });
+
+  // Mouse move
+  document.addEventListener('mousemove', (e) => {
+    if (!cameraControls.isRotating) return;
+
+    const deltaX = e.clientX - cameraControls.previousMousePosition.x;
+    const deltaY = e.clientY - cameraControls.previousMousePosition.y;
+
+    cameraControls.rotation.y += deltaX * 0.01;
+    cameraControls.rotation.x += deltaY * 0.01;
+
+    // Limitar rotación vertical
+    cameraControls.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraControls.rotation.x));
+
+    cameraControls.previousMousePosition = { x: e.clientX, y: e.clientY };
+    updateCameraPosition();
+  });
+
+  // Mouse up
+  document.addEventListener('mouseup', () => {
+    cameraControls.isRotating = false;
+  });
+
+  // Wheel zoom
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomSpeed = 0.5;
+    if (e.deltaY < 0) {
+      cameraControls.zoom = Math.max(cameraControls.minZoom, cameraControls.zoom - zoomSpeed);
+    } else {
+      cameraControls.zoom = Math.min(cameraControls.maxZoom, cameraControls.zoom + zoomSpeed);
+    }
+    updateCameraPosition();
+  }, { passive: false });
+
+  // Reset camera with R key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'r' || e.key === 'R') {
+      cameraControls.rotation = { x: 0, y: 0 };
+      cameraControls.zoom = cameraInitialPosition.distance;
+      updateCameraPosition();
+    }
+  });
+}
+
+function updateCameraPosition() {
+  if (!camera) return;
+
+  const radius = cameraControls.zoom;
+  const x = radius * Math.sin(cameraControls.rotation.y) * Math.cos(cameraControls.rotation.x);
+  const y = radius * Math.sin(cameraControls.rotation.x) + 0.7;
+  const z = radius * Math.cos(cameraControls.rotation.y) * Math.cos(cameraControls.rotation.x);
+
+  camera.position.set(x, y, z);
+  camera.lookAt(0, 0.7, 0);
+}
+
 function init3DScene() {
   const container = document.getElementById('canvas-container');
   if (!container) return;
@@ -122,8 +201,7 @@ function init3DScene() {
   scene.background = new THREE.Color(0xf2f7ff);
 
   camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-  camera.position.set(2.8, 2.8, 5.4);
-  camera.lookAt(0, 0.7, 0);
+  updateCameraPosition();
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -154,11 +232,11 @@ function init3DScene() {
   palletGroup = new THREE.Group();
   scene.add(palletGroup);
 
+  // Configurar controles de cámara
+  setupCameraControls(container);
+
   function animate() {
     requestAnimationFrame(animate);
-    if (palletGroup) {
-      palletGroup.rotation.y += 0.006;
-    }
     renderer.render(scene, camera);
   }
 
@@ -234,7 +312,6 @@ function render3DFromResult(best) {
     }
   }
 
-  palletGroup.rotation.y = Math.PI / 5;
   camera.lookAt(0, 0.7, 0);
   renderer.render(scene, camera);
 }
