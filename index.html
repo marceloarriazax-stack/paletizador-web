@@ -2,354 +2,569 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Simulador de Pallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Profesional de Palletización 3D</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    #controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.9);
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    label { display: block; margin-top: 5px; }
-    #result { margin-top: 10px; font-weight: bold; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      width: 100%;
+      height: 100vh;
+    }
+
+    #controls {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 380px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #controls::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #controls::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+
+    #controls::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.3);
+      border-radius: 10px;
+    }
+
+    #controls::-webkit-scrollbar-thumb:hover {
+      background: rgba(102, 126, 234, 0.6);
+    }
+
+    .control-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: #667eea;
+      border-radius: 2px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 14px;
+      gap: 6px;
+    }
+
+    label span {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      padding: 11px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input[type="text"]::placeholder {
+      color: #999;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+      margin: 24px 0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #addBoxes {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+
+    #addBoxes:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+
+    #addBoxes:active {
+      transform: translateY(0);
+    }
+
+    #updatePallet {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      box-shadow: 0 8px 24px rgba(245, 87, 108, 0.3);
+    }
+
+    #updatePallet:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(245, 87, 108, 0.4);
+    }
+
+    #updatePallet:active {
+      transform: translateY(0);
+    }
+
+    #result {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 20px;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #333;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      color: #667eea;
+      font-weight: 700;
+    }
+
+    .result-value {
+      color: #764ba2;
+      font-weight: 700;
+    }
+
+    .info-box {
+      background: rgba(102, 126, 234, 0.08);
+      border-left: 4px solid #667eea;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .info-box strong {
+      color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+      #controls {
+        width: 90%;
+        left: 5%;
+        top: 10px;
+        padding: 20px;
+      }
+    }
+
+    /* Animación de carga */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .loading {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
   <div id="controls">
-    <!-- Inputs para las cajas -->
-<label>Dimensiones caja (Largo, Ancho, Alto):
-  <input type="text" id="boxDimensions" placeholder="Ej: 82.00 26.00 36.00">
-</label>
+    <div class="control-section">
+      <div class="section-title">📦 Caja</div>
+      
+      <label>
+        <span>Dimensiones (Largo, Ancho, Alto en cm)</span>
+        <input type="text" id="boxDimensions" placeholder="Ej: 82.00 26.00 36.00" value="82.00 26.00 36.00">
+      </label>
 
-<label>Peso por caja (kg):
-  <input type="number" id="boxWeight" placeholder="Ej: 12.5" step="0.01" min="0">
-</label>
+      <label>
+        <span>Peso por caja (kg)</span>
+        <input type="number" id="boxWeight" placeholder="Ej: 12.5" value="12.5" step="0.01" min="0">
+      </label>
 
-<button id="addBoxes">Agregar cajas</button>
-    <!-- Inputs para el pallet -->
+      <div class="button-group">
+        <button id="addBoxes">Calcular</button>
+      </div>
+    </div>
+
     <hr>
-    <label>Ancho pallet (m): <input type="number" id="palletWidthInput" value="1.1" step="0.05" min="0.05"></label>
-    <label>Largo pallet (m): <input type="number" id="palletDepthInput" value="1.2" step="0.05" min="0.05"></label>
-    <label>Altura pallet (m): <input type="number" id="palletHeightInput" value="0.15" step="0.05" min="0.05"></label>
-<label>Peso por caja (kg):
-  <input type="number" id="boxWeight" placeholder="Ej: 12.5" step="0.01" min="0">
-</label>
-    <button id="updatePallet">Actualizar pallet</button>
 
-    <div id="result">Cajas en pallet: 0</div>
+    <div class="control-section">
+      <div class="section-title">📦 Pallet</div>
+      
+      <label>
+        <span>Ancho pallet (m)</span>
+        <input type="number" id="palletWidthInput" value="1.1" step="0.05" min="0.05">
+      </label>
+
+      <label>
+        <span>Largo pallet (m)</span>
+        <input type="number" id="palletDepthInput" value="1.2" step="0.05" min="0.05">
+      </label>
+
+      <label>
+        <span>Altura pallet (m)</span>
+        <input type="number" id="palletHeightInput" value="0.15" step="0.05" min="0.05">
+      </label>
+
+      <div class="button-group">
+        <button id="updatePallet">Actualizar</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="control-section">
+      <div class="section-title">📊 Resultado</div>
+      <div id="result">
+        <div class="result-item">
+          <span class="result-label">Cajas:</span>
+          <span class="result-value">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Capas:</span>
+          <span class="result-value">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Ocupación:</span>
+          <span class="result-value">0%</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Peso Total:</span>
+          <span class="result-value">0 kg</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>💡 Consejo:</strong> Arrastra el mouse para rotar la vista 3D. Usa la rueda del ratón para zoom.
+      </div>
+    </div>
   </div>
 
- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
-<script>
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+  <script>
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+    
+    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+    document.body.appendChild(renderer.domElement);
 
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-  var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  dirLight.position.set(5, 10, 5);
-  scene.add(dirLight);
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    var dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(8, 15, 8);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    scene.add(dirLight);
 
-  var palletWidth = 1.1;
-  var palletDepth = 1.2;
-  var palletHeight = 0.15;
+    var pointLight = new THREE.PointLight(0x667eea, 0.5);
+    pointLight.position.set(-5, 5, 5);
+    scene.add(pointLight);
 
-  var palletMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-  var palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
-  var pallet = new THREE.Mesh(palletGeometry, palletMaterial);
-  pallet.position.y = -palletHeight / 2;
-  scene.add(pallet);
+    var palletWidth = 1.1;
+    var palletDepth = 1.2;
+    var palletHeight = 0.15;
 
-  var grid = new THREE.GridHelper(5, 10);
-  scene.add(grid);
+    var palletMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x8B4513,
+      metalness: 0.1,
+      roughness: 0.7
+    });
+    var palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
+    var pallet = new THREE.Mesh(palletGeometry, palletMaterial);
+    pallet.position.y = 0;
+    pallet.castShadow = true;
+    pallet.receiveShadow = true;
+    scene.add(pallet);
 
-  var radius = 3;
-  var angle = 0;
-  var pitch = 0.3;
-  var pitchMin = -1;
-  var pitchMax = 1;
-  camera.position.set(radius * Math.cos(angle), 1.5, radius * Math.sin(angle));
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
+    var grid = new THREE.GridHelper(4, 20, 0x444444, 0x222222);
+    grid.position.y = -0.1;
+    scene.add(grid);
 
-  var isDragging = false;
-  var previousMouseX = 0;
-  var previousMouseY = 0;
+    var radius = 3.5;
+    var angle = 0.5;
+    var pitch = 0.4;
+    var pitchMin = -1;
+    var pitchMax = 1;
+    camera.position.set(radius * Math.cos(pitch) * Math.cos(angle), radius * Math.sin(pitch) + 0.8, radius * Math.cos(pitch) * Math.sin(angle));
+    camera.lookAt(new THREE.Vector3(0, 0.3, 0));
 
-  document.addEventListener('mousedown', function(event) {
-    if (event.button === 0) {
-      isDragging = true;
+    var isDragging = false;
+    var previousMouseX = 0;
+    var previousMouseY = 0;
+
+    document.addEventListener('mousedown', function(event) {
+      if (event.button === 0) {
+        isDragging = true;
+        previousMouseX = event.clientX;
+        previousMouseY = event.clientY;
+      }
+    });
+
+    document.addEventListener('mouseup', function(event) {
+      if (event.button === 0) isDragging = false;
+    });
+
+    document.addEventListener('mousemove', function(event) {
+      if (!isDragging) return;
+      var deltaX = event.clientX - previousMouseX;
+      var deltaY = event.clientY - previousMouseY;
       previousMouseX = event.clientX;
       previousMouseY = event.clientY;
+      angle += deltaX * 0.005;
+      pitch -= deltaY * 0.003;
+      pitch = Math.max(pitchMin, Math.min(pitchMax, pitch));
+      var x = radius * Math.cos(pitch) * Math.cos(angle);
+      var y = radius * Math.sin(pitch) + 0.8;
+      var z = radius * Math.cos(pitch) * Math.sin(angle);
+      camera.position.set(x, y, z);
+      camera.lookAt(new THREE.Vector3(0, 0.3, 0));
+    });
+
+    document.addEventListener('wheel', function(event) {
+      event.preventDefault();
+      radius += event.deltaY * 0.001;
+      radius = Math.max(1.5, Math.min(8, radius));
+      var x = radius * Math.cos(pitch) * Math.cos(angle);
+      var y = radius * Math.sin(pitch) + 0.8;
+      var z = radius * Math.cos(pitch) * Math.sin(angle);
+      camera.position.set(x, y, z);
+    }, { passive: false });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
     }
-  });
-  document.addEventListener('mouseup', function(event) {
-    if (event.button === 0) isDragging = false;
-  });
-  document.addEventListener('mousemove', function(event) {
-    if (!isDragging) return;
-    var deltaX = event.clientX - previousMouseX;
-    var deltaY = event.clientY - previousMouseY;
-    previousMouseX = event.clientX;
-    previousMouseY = event.clientY;
-    angle += deltaX * 0.005;
-    pitch -= deltaY * 0.003;
-    pitch = Math.max(pitchMin, Math.min(pitchMax, pitch));
-    var x = radius * Math.cos(pitch) * Math.cos(angle);
-    var y = radius * Math.sin(pitch);
-    var z = radius * Math.cos(pitch) * Math.sin(angle);
-    camera.position.set(x, y, z);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
-  });
+    animate();
 
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-  }
-  animate();
+    window.addEventListener('resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-  window.addEventListener('resize', function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+    function addBoxes() {
+      var input = document.getElementById("boxDimensions").value.trim();
+      var parts = input.split(/[\s,]+/);
 
- function addBoxes() {
-
-  var input = document.getElementById("boxDimensions").value.trim();
-
-  // Separar por tab, espacio o coma
-  var parts = input.split(/[\s,]+/);
-
-  if (parts.length < 3) {
-    alert("Por favor ingresa 3 valores: Largo, Ancho y Alto");
-    return;
-  }
-
-  // Orden: Largo, Ancho, Alto
-  var boxD = parseFloat(parts[0]) / 100; // Largo
-  var boxW = parseFloat(parts[1]) / 100; // Ancho
-  var boxH = parseFloat(parts[2]) / 100; // Alto
-
-  // Peso unitario
-  var boxWeight = parseFloat(document.getElementById("boxWeight").value);
-
-  if (
-    isNaN(boxW) ||
-    isNaN(boxD) ||
-    isNaN(boxH) ||
-    boxW <= 0 ||
-    boxD <= 0 ||
-    boxH <= 0
-  ) {
-    alert("Dimensiones inválidas");
-    return;
-  }
-
-  if (isNaN(boxWeight) || boxWeight <= 0) {
-    alert("Ingresa un peso válido para la caja");
-    return;
-  }
-
-  // Eliminar cajas anteriores
-  for (var i = scene.children.length - 1; i >= 0; i--) {
-    if (
-      scene.children[i].userData &&
-      (scene.children[i].userData.type === "box" ||
-       scene.children[i].userData.type === "edge")
-    ) {
-      scene.remove(scene.children[i]);
-    }
-  }
-
-  var maxStackHeight = 1.50;
-  var maxLayers = Math.floor(maxStackHeight / boxH);
-  let totalBoxes = 0;
-
-  // -------------------------
-  // Bin packing corregido
-  // -------------------------
-  function generateLayer(yOffset, rotateLayer) {
-
-    let occupied = [];
-
-    function fits(x, z, w, d) {
-      // Validar que la caja no exceda los límites del pallet
-      if (x + w > palletWidth || z + d > palletDepth) {
-        return false;
+      if (parts.length < 3) {
+        alert("Por favor ingresa 3 valores: Largo, Ancho y Alto");
+        return;
       }
 
-      // Validar que no se superponga con cajas existentes
-      for (let r of occupied) {
-        if (
-          !(x + w <= r.x ||
-            x >= r.x + r.w ||
-            z + d <= r.z ||
-            z >= r.z + r.d)
-        ) {
-          return false;
+      var boxD = parseFloat(parts[0]) / 100;
+      var boxW = parseFloat(parts[1]) / 100;
+      var boxH = parseFloat(parts[2]) / 100;
+      var boxWeight = parseFloat(document.getElementById("boxWeight").value);
+
+      if (isNaN(boxW) || isNaN(boxD) || isNaN(boxH) || boxW <= 0 || boxD <= 0 || boxH <= 0) {
+        alert("Dimensiones inválidas");
+        return;
+      }
+
+      if (isNaN(boxWeight) || boxWeight <= 0) {
+        alert("Ingresa un peso válido para la caja");
+        return;
+      }
+
+      for (var i = scene.children.length - 1; i >= 0; i--) {
+        if (scene.children[i].userData && (scene.children[i].userData.type === "box" || scene.children[i].userData.type === "edge")) {
+          scene.remove(scene.children[i]);
         }
       }
 
-      return true;
-    }
+      var maxStackHeight = 1.50;
+      var maxLayers = Math.floor(maxStackHeight / boxH);
+      let totalBoxes = 0;
 
-    let orientations = [
-      { w: boxW, d: boxD },
-      { w: boxD, d: boxW }
-    ];
+      function generateLayer(yOffset, rotateLayer) {
+        let occupied = [];
 
-    // Usar paso discreto basado en dimensiones reales de la caja
-    let step = Math.min(boxW, boxD) / 2;
-    if (step < 0.001) step = 0.001; // Mínimo para evitar infinitos
+        function fits(x, z, w, d) {
+          if (x + w > palletWidth || z + d > palletDepth) {
+            return false;
+          }
 
-    for (let z = 0; z <= palletDepth - Math.min(boxD, boxW); z += step) {
-      for (let x = 0; x <= palletWidth - Math.min(boxW, boxD); x += step) {
-        for (let o of orientations) {
-          if (fits(x, z, o.w, o.d)) {
-            let geometry = new THREE.BoxGeometry(
-              o.w,
-              boxH,
-              o.d
-            );
-
-            let solidMaterial =
-              new THREE.MeshLambertMaterial({
-                color: rotateLayer
-                  ? 0xffa07a
-                  : 0x87CEEB
-              });
-
-            let box =
-              new THREE.Mesh(
-                geometry,
-                solidMaterial
-              );
-
-            box.position.set(
-              -palletWidth / 2 + x + o.w / 2,
-              boxH / 2 + yOffset,
-              -palletDepth / 2 + z + o.d / 2
-            );
-
-            box.userData = {
-              type: "box"
-            };
-
-            scene.add(box);
-
-            let wireMaterial =
-              new THREE.MeshBasicMaterial({
-                color: 0x000000,
-                wireframe: true
-              });
-
-            let wireBox =
-              new THREE.Mesh(
-                geometry,
-                wireMaterial
-              );
-
-            wireBox.position.copy(
-              box.position
-            );
-
-            wireBox.userData = {
-              type: "edge"
-            };
-
-            scene.add(wireBox);
-
-            occupied.push({
-              x: x,
-              z: z,
-              w: o.w,
-              d: o.d
-            });
-
-            totalBoxes++;
-
-            // Parar si ya alcanzamos el límite físico
-            if (totalBoxes >= Math.floor((palletWidth * palletDepth * maxStackHeight) / (boxW * boxD * boxH))) {
-              return;
+          for (let r of occupied) {
+            if (!(x + w <= r.x || x >= r.x + r.w || z + d <= r.z || z >= r.z + r.d)) {
+              return false;
             }
+          }
 
-            // Saltar a la siguiente posición válida
-            x += o.w - step;
+          return true;
+        }
+
+        let orientations = [
+          { w: boxW, d: boxD },
+          { w: boxD, d: boxW }
+        ];
+
+        let step = Math.min(boxW, boxD) / 2;
+        if (step < 0.001) step = 0.001;
+
+        for (let z = 0; z <= palletDepth - Math.min(boxD, boxW); z += step) {
+          for (let x = 0; x <= palletWidth - Math.min(boxW, boxD); x += step) {
+            for (let o of orientations) {
+              if (fits(x, z, o.w, o.d)) {
+                let geometry = new THREE.BoxGeometry(o.w, boxH, o.d);
+                let solidMaterial = new THREE.MeshStandardMaterial({
+                  color: rotateLayer ? 0xff6b9d : 0x4ecdc4,
+                  metalness: 0.2,
+                  roughness: 0.6
+                });
+
+                let box = new THREE.Mesh(geometry, solidMaterial);
+                box.position.set(
+                  -palletWidth / 2 + x + o.w / 2,
+                  boxH / 2 + yOffset,
+                  -palletDepth / 2 + z + o.d / 2
+                );
+                box.castShadow = true;
+                box.receiveShadow = true;
+                box.userData = { type: "box" };
+                scene.add(box);
+
+                let wireMaterial = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 1 });
+                let edges = new THREE.EdgesGeometry(geometry);
+                let wireBox = new THREE.LineSegments(edges, wireMaterial);
+                wireBox.position.copy(box.position);
+                wireBox.userData = { type: "edge" };
+                scene.add(wireBox);
+
+                occupied.push({ x: x, z: z, w: o.w, d: o.d });
+                totalBoxes++;
+
+                if (totalBoxes >= Math.floor((palletWidth * palletDepth * maxStackHeight) / (boxW * boxD * boxH))) {
+                  return;
+                }
+
+                x += o.w - step;
+              }
+            }
           }
         }
       }
+
+      for (let h = 0; h < maxLayers; h++) {
+        generateLayer(h * boxH, h % 2 === 1);
+      }
+
+      let palletVolume = palletWidth * palletDepth * maxStackHeight;
+      let boxVolume = boxW * boxD * boxH * totalBoxes;
+      let occupancy = (boxVolume / palletVolume * 100).toFixed(1);
+      let totalWeight = (totalBoxes * boxWeight).toFixed(2);
+
+      document.querySelector('#result .result-item:nth-child(1) .result-value').textContent = totalBoxes;
+      document.querySelector('#result .result-item:nth-child(2) .result-value').textContent = maxLayers;
+      document.querySelector('#result .result-item:nth-child(3) .result-value').textContent = occupancy + '%';
+      document.querySelector('#result .result-item:nth-child(4) .result-value').textContent = totalWeight + ' kg';
     }
-  }
 
-  for (let h = 0; h < maxLayers; h++) {
-    generateLayer(
-      h * boxH,
-      h % 2 === 1
-    );
-  }
+    document.getElementById("addBoxes").addEventListener("click", addBoxes);
 
-  // -------------------------
-  // Estadísticas corregidas
-  // -------------------------
+    document.getElementById("updatePallet").addEventListener("click", function () {
+      palletWidth = parseFloat(document.getElementById("palletWidthInput").value);
+      palletDepth = parseFloat(document.getElementById("palletDepthInput").value);
+      palletHeight = parseFloat(document.getElementById("palletHeightInput").value);
+      scene.remove(pallet);
+      palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
+      pallet = new THREE.Mesh(palletGeometry, palletMaterial);
+      pallet.position.y = 0;
+      pallet.castShadow = true;
+      pallet.receiveShadow = true;
+      scene.add(pallet);
+      addBoxes();
+    });
 
-  let palletVolume =
-    palletWidth *
-    palletDepth *
-    maxStackHeight;
-
-  let boxVolume =
-    boxW *
-    boxD *
-    boxH *
-    totalBoxes;
-
-  let occupancy =
-    (
-      boxVolume /
-      palletVolume *
-      100
-    ).toFixed(1);
-
-  let totalWeight =
-    (
-      totalBoxes *
-      boxWeight
-    ).toFixed(2);
-
-  document.getElementById(
-    "result"
-  ).textContent =
-    "Cajas en pallet: " +
-    totalBoxes +
-    " | Capas: " +
-    maxLayers +
-    " | Ocupación: " +
-    occupancy +
-    "%" +
-    " | Peso total: " +
-    totalWeight +
-    " kg";
-}
-  document.getElementById("addBoxes").addEventListener("click", addBoxes);
-
-  document.getElementById("updatePallet").addEventListener("click", function () {
-    palletWidth = parseFloat(document.getElementById("palletWidthInput").value);
-    palletDepth = parseFloat(document.getElementById("palletDepthInput").value);
-    palletHeight = parseFloat(document.getElementById("palletHeightInput").value);
-    scene.remove(pallet);
-    palletGeometry = new THREE.BoxGeometry(palletWidth, palletHeight, palletDepth);
-    pallet = new THREE.Mesh(palletGeometry, palletMaterial);
-    pallet.position.y = -palletHeight / 2;
-    scene.add(pallet);
     addBoxes();
-  });
-</script>
+  </script>
 </body>
 </html>
