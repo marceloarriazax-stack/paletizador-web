@@ -68,23 +68,12 @@ function permuteDimensions(dimensions) {
 function countAlternatingLayerBoxes(palletObj, variant) {
   if (variant.x <= 0 || variant.y <= 0) return 0;
 
-  let total = 0;
-  const rows = Math.max(1, Math.ceil(palletObj.length / Math.min(variant.x, variant.y)));
+  const patternA = Math.max(0, Math.floor(palletObj.length / variant.x) * Math.floor(palletObj.width / variant.y));
+  const patternB = Math.max(0, Math.floor(palletObj.length / variant.y) * Math.floor(palletObj.width / variant.x));
 
-  for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
-    const useRotated = rowIndex % 2 === 1 && variant.x !== variant.y;
-    const currentLength = useRotated ? variant.y : variant.x;
-    const currentWidth = useRotated ? variant.x : variant.y;
+  if (variant.x === variant.y) return patternA;
 
-    const boxesPerRow = Math.max(0, Math.floor(palletObj.length / currentLength));
-    const boxesPerColumn = Math.max(0, Math.floor(palletObj.width / currentWidth));
-    const rowTotal = boxesPerRow * boxesPerColumn;
-
-    if (rowTotal <= 0) continue;
-    total += rowTotal;
-  }
-
-  return total;
+  return Math.max(patternA, patternB);
 }
 
 function getBestOrientation(box, palletObj) {
@@ -103,9 +92,7 @@ function getBestOrientation(box, palletObj) {
   const valid = [];
 
   for (const variant of variants) {
-    if (variant.x <= 0 || variant.y <= 0 || variant.z <= 0) {
-      continue;
-    }
+    if (variant.x <= 0 || variant.y <= 0 || variant.z <= 0) continue;
 
     const boxesPerLayer = countAlternatingLayerBoxes(palletObj, variant);
     if (boxesPerLayer <= 0) continue;
@@ -287,43 +274,41 @@ function render3DFromResult(best, palletObj) {
   const boxWidth = best.y;
   const boxHeight = best.z;
   let created = 0;
-  let rowIndex = 0;
+  const rowCount = Math.max(1, Math.ceil(pLen / Math.min(boxLength, boxWidth)));
 
-  while (created < best.totalBoxes) {
-    const useRotated = rowIndex % 2 === 1 && boxLength !== boxWidth;
-    const currentLength = useRotated ? boxWidth : boxLength;
-    const currentWidth = useRotated ? boxLength : boxWidth;
+  for (let layer = 0; layer < best.layers; layer++) {
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const useRotated = rowIndex % 2 === 1 && boxLength !== boxWidth;
+      const currentLength = useRotated ? boxWidth : boxLength;
+      const currentWidth = useRotated ? boxLength : boxWidth;
 
-    const countPerRow = Math.max(0, Math.floor(pLen / currentLength));
-    const countCols = Math.max(0, Math.floor(pWid / currentWidth));
+      const countPerRow = Math.max(0, Math.floor(pLen / currentLength));
+      const countCols = Math.max(0, Math.floor(pWid / currentWidth));
 
-    if (countPerRow <= 0 || countCols <= 0) {
-      break;
-    }
+      if (countPerRow <= 0 || countCols <= 0) continue;
 
-    for (let i = 0; i < countPerRow; i++) {
-      for (let j = 0; j < countCols; j++) {
-        if (created >= best.totalBoxes) break;
+      for (let i = 0; i < countPerRow; i++) {
+        for (let j = 0; j < countCols; j++) {
+          if (created >= best.totalBoxes) break;
 
-        const geometry = new THREE.BoxGeometry(currentLength, boxHeight, currentWidth);
-        const material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color().setHSL((created % 8) / 8, 0.7, 0.6),
-          roughness: 0.45,
-          metalness: 0.12,
-        });
+          const geometry = new THREE.BoxGeometry(currentLength, boxHeight, currentWidth);
+          const material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color().setHSL((created % 8) / 8, 0.7, 0.6),
+            roughness: 0.45,
+            metalness: 0.12,
+          });
 
-        const boxMesh = new THREE.Mesh(geometry, material);
-        const x = -pLen / 2 + currentLength / 2 + i * currentLength;
-        const z = -pWid / 2 + currentWidth / 2 + j * currentWidth;
-        const y = pThick + boxHeight / 2 + (Math.floor(created / best.boxesPerLayer)) * boxHeight;
+          const boxMesh = new THREE.Mesh(geometry, material);
+          const x = -pLen / 2 + currentLength / 2 + i * currentLength;
+          const z = -pWid / 2 + currentWidth / 2 + j * currentWidth;
+          const y = pThick + boxHeight / 2 + layer * boxHeight;
 
-        boxMesh.position.set(x, y, z);
-        palletGroup.add(boxMesh);
-        created += 1;
+          boxMesh.position.set(x, y, z);
+          palletGroup.add(boxMesh);
+          created += 1;
+        }
       }
     }
-
-    rowIndex += 1;
   }
 
   camera.lookAt(0, 0.7, 0);
