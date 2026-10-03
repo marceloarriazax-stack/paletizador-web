@@ -1,73 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Simulador de Pallet</title>
 
-<!-- =====================================================
-     THREE.JS
-===================================================== -->
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-
-
 <style>
 
-/* =====================================================
-   VARIABLES
-===================================================== */
-
-:root {
-
-    --bg: #eef1f5;
-
-    --panel: #ffffff;
-
-    --border: #dfe3e8;
-
-    --text: #20252b;
-
-    --muted: #707780;
-
-    --primary: #2563eb;
-
-    --primary-dark: #1d4ed8;
-
-    --success: #16a34a;
-
-    --danger: #dc2626;
-
-    --shadow:
-        0 12px 35px rgba(0,0,0,.14);
-
-}
-
-
-/* =====================================================
+/* =========================================================
    GENERAL
-===================================================== */
+========================================================= */
 
 * {
-
     box-sizing: border-box;
-
 }
-
 
 html,
 body {
-
-    width: 100%;
-
-    height: 100%;
-
     margin: 0;
-
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 
     font-family:
@@ -75,129 +28,86 @@ body {
         Arial,
         sans-serif;
 
-    background:
-        var(--bg);
-
-    color:
-        var(--text);
-
+    background: #eef1f5;
+    color: #20252b;
 }
 
 
-/* =====================================================
-   CANVAS
-===================================================== */
-
-canvas {
-
-    display: block;
-
-}
-
-
-/* =====================================================
+/* =========================================================
    BARRA SUPERIOR
-===================================================== */
+========================================================= */
 
 #topbar {
 
-    position: absolute;
+    position: fixed;
 
     top: 0;
-
     left: 0;
-
     right: 0;
 
     height: 64px;
 
-    display: flex;
+    background: rgba(255,255,255,.96);
 
+    border-bottom: 1px solid #dfe3e8;
+
+    display: flex;
     align-items: center;
 
     padding: 0 22px;
 
-    background:
-        rgba(255,255,255,.95);
-
-    backdrop-filter:
-        blur(10px);
-
-    border-bottom:
-        1px solid var(--border);
-
-    box-shadow:
-        0 2px 12px rgba(0,0,0,.06);
-
-    z-index: 20;
-
+    z-index: 100;
 }
 
 
 .logo {
 
     width: 38px;
-
     height: 38px;
 
     border-radius: 9px;
 
-    background:
-        #1f2937;
+    background: #1f2937;
 
-    color:
-        white;
+    color: white;
 
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
     font-weight: 700;
 
-    font-size: 17px;
-
     margin-right: 12px;
-
 }
 
 
-.title-area h1 {
+.title h1 {
 
     margin: 0;
 
     font-size: 18px;
 
     font-weight: 650;
-
 }
 
 
-.title-area span {
-
-    display: block;
-
-    margin-top: 2px;
-
-    color:
-        var(--muted);
+.title span {
 
     font-size: 11px;
 
+    color: #737b84;
 }
 
 
-/* =====================================================
+/* =========================================================
    PANEL
-===================================================== */
+========================================================= */
 
 #controls {
 
-    position: absolute;
+    position: fixed;
 
     top: 82px;
-
     left: 18px;
 
     width: 340px;
@@ -218,39 +128,31 @@ canvas {
     border-radius: 15px;
 
     box-shadow:
-        var(--shadow);
+        0 12px 35px rgba(0,0,0,.14);
 
-    z-index: 10;
-
+    z-index: 50;
 }
 
 
 #controls::-webkit-scrollbar {
-
     width: 6px;
-
 }
 
 
 #controls::-webkit-scrollbar-thumb {
 
-    background:
-        #cbd0d6;
+    background: #cbd0d6;
 
-    border-radius:
-        20px;
-
+    border-radius: 10px;
 }
 
 
-/* =====================================================
+/* =========================================================
    SECCIONES
-===================================================== */
+========================================================= */
 
 .section {
-
     margin-bottom: 17px;
-
 }
 
 
@@ -272,45 +174,37 @@ canvas {
 
     letter-spacing: .5px;
 
-    color:
-        #4b5563;
-
+    color: #4b5563;
 }
 
 
 .section-number {
 
     width: 23px;
-
     height: 23px;
 
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     border-radius: 6px;
 
-    background:
-        #eff4ff;
+    background: #eff4ff;
 
-    color:
-        #315bc9;
+    color: #315bc9;
 
     font-size: 10px;
 
 }
 
 
-/* =====================================================
-   CAMPOS
-===================================================== */
+/* =========================================================
+   INPUTS
+========================================================= */
 
 .field {
-
     margin-bottom: 11px;
-
 }
 
 
@@ -324,9 +218,7 @@ canvas {
 
     font-weight: 600;
 
-    color:
-        #5e6670;
-
+    color: #5e6670;
 }
 
 
@@ -336,36 +228,30 @@ canvas {
 
     height: 39px;
 
-    padding:
-        0 11px;
+    padding: 0 11px;
 
     border:
         1px solid #d5dae0;
 
     border-radius: 8px;
 
-    outline: none;
+    background: white;
 
-    background:
-        white;
-
-    color:
-        #20252b;
+    color: #20252b;
 
     font-size: 13px;
 
+    outline: none;
 }
 
 
 .input:focus {
 
-    border-color:
-        var(--primary);
+    border-color: #2563eb;
 
     box-shadow:
         0 0 0 3px
         rgba(37,99,235,.10);
-
 }
 
 
@@ -373,33 +259,27 @@ canvas {
 
     margin-top: 4px;
 
-    color:
-        #8b929a;
-
     font-size: 10px;
 
+    color: #8b929a;
 }
 
 
-/* =====================================================
+/* =========================================================
    BOTONES
-===================================================== */
+========================================================= */
 
 button {
 
-    font-family:
-        inherit;
+    font-family: inherit;
 
-    cursor:
-        pointer;
+    cursor: pointer;
 
-    border:
-        none;
-
+    border: none;
 }
 
 
-.primary-button {
+.primary {
 
     width: 100%;
 
@@ -407,34 +287,22 @@ button {
 
     border-radius: 8px;
 
-    background:
-        var(--primary);
+    background: #2563eb;
 
-    color:
-        white;
+    color: white;
 
     font-size: 13px;
 
     font-weight: 650;
-
-    transition:
-        .15s;
-
 }
 
 
-.primary-button:hover {
-
-    background:
-        var(--primary-dark);
-
-    transform:
-        translateY(-1px);
-
+.primary:hover {
+    background: #1d4ed8;
 }
 
 
-.secondary-button {
+.secondary {
 
     width: 100%;
 
@@ -442,240 +310,392 @@ button {
 
     border-radius: 8px;
 
-    background:
-        #f1f3f5;
+    background: #f1f3f5;
 
-    color:
-        #374151;
+    color: #374151;
 
     font-size: 12px;
 
     font-weight: 600;
-
 }
 
 
-.secondary-button:hover {
-
-    background:
-        #e5e7eb;
-
+.secondary:hover {
+    background: #e5e7eb;
 }
 
-
-/* =====================================================
-   SEPARADOR
-===================================================== */
 
 .separator {
 
     height: 1px;
 
-    background:
-        var(--border);
+    background: #dfe3e8;
 
-    margin:
-        18px 0;
-
+    margin: 18px 0;
 }
 
 
-/* =====================================================
+/* =========================================================
    RESULTADOS
-===================================================== */
+========================================================= */
 
-#result-container {
+#result {
 
-    background:
-        #f7f9fb;
+    background: #f7f9fb;
 
     border:
         1px solid #e1e5ea;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    padding:
-        12px;
-
+    padding: 12px;
 }
 
 
 .result-title {
 
-    margin-bottom:
-        8px;
+    margin-bottom: 8px;
 
-    color:
-        #7b838c;
+    color: #7b838c;
 
-    font-size:
-        10px;
+    font-size: 10px;
 
-    font-weight:
-        700;
+    font-weight: 700;
 
-    text-transform:
-        uppercase;
+    text-transform: uppercase;
 
-    letter-spacing:
-        .6px;
-
+    letter-spacing: .6px;
 }
 
 
 .result-row {
 
-    display:
-        flex;
+    display: flex;
 
-    justify-content:
-        space-between;
+    justify-content: space-between;
 
-    padding:
-        4px 0;
-
+    padding: 4px 0;
 }
 
 
 .result-label {
 
-    color:
-        #707780;
+    color: #707780;
 
-    font-size:
-        12px;
-
+    font-size: 12px;
 }
 
 
 .result-value {
 
-    color:
-        #1f2937;
+    color: #1f2937;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    font-weight:
-        700;
-
+    font-weight: 700;
 }
 
-
-/* =====================================================
-   STATUS
-===================================================== */
 
 #status {
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
 
-    gap:
-        7px;
+    gap: 7px;
 
-    margin-top:
-        12px;
+    margin-top: 12px;
 
-    color:
-        #7b838c;
+    color: #7b838c;
 
-    font-size:
-        10px;
+    font-size: 10px;
+}
+
+
+.dot {
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #16a34a;
+}
+
+
+/* =========================================================
+   ÁREA 3D
+========================================================= */
+
+#viewport {
+
+    position: fixed;
+
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
+
+    perspective: 1000px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f4f6f8 0%,
+            #e7ebef 100%
+        );
+}
+
+
+/* =========================================================
+   PISO
+========================================================= */
+
+#floor {
+
+    position: absolute;
+
+    width: 1600px;
+    height: 1600px;
+
+    left: 50%;
+    top: 55%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(65deg);
+
+    transform-style: preserve-3d;
+
+    background-image:
+        linear-gradient(
+            #d3d8de 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            #d3d8de 1px,
+            transparent 1px
+        );
+
+    background-size:
+        50px 50px;
+
+    opacity: .65;
+}
+
+
+/* =========================================================
+   CÂMARA
+========================================================= */
+
+#camera {
+
+    position: absolute;
+
+    left: 50%;
+    top: 53%;
+
+    width: 0;
+    height: 0;
+
+    transform-style:
+        preserve-3d;
 
 }
 
 
-.status-dot {
+/* =========================================================
+   MUNDO
+========================================================= */
 
-    width:
-        7px;
+#world {
 
-    height:
-        7px;
+    position: absolute;
 
-    border-radius:
-        50%;
+    left: 0;
+    top: 0;
 
-    background:
-        var(--success);
+    transform-style:
+        preserve-3d;
+
+    transform:
+        rotateX(55deg)
+        rotateZ(-35deg);
 
 }
 
 
-/* =====================================================
-   BOTÓN CENTRAR
-===================================================== */
+/* =========================================================
+   PALLET
+========================================================= */
 
-#centerView {
+#pallet {
 
-    position:
-        absolute;
+    position: absolute;
 
-    top:
-        82px;
+    transform-style:
+        preserve-3d;
 
-    right:
-        18px;
+}
 
-    width:
-        42px;
 
-    height:
-        42px;
+/* =========================================================
+   PARTES DEL PALLET
+========================================================= */
 
-    border-radius:
-        9px;
+.pallet-top {
+
+    position: absolute;
 
     background:
-        rgba(255,255,255,.95);
+        linear-gradient(
+            135deg,
+            #a66a36,
+            #805025
+        );
 
     border:
-        1px solid rgba(0,0,0,.08);
+        2px solid #69421f;
 
     box-shadow:
-        0 4px 14px
-        rgba(0,0,0,.10);
+        0 5px 10px rgba(0,0,0,.20);
+}
 
-    font-size:
-        18px;
 
-    z-index:
-        10;
+.pallet-leg {
+
+    position: absolute;
+
+    background:
+        linear-gradient(
+            90deg,
+            #6e431f,
+            #8c5729
+        );
+
+    border:
+        1px solid #5b371a;
 
 }
 
 
-/* =====================================================
-   INSTRUCCIONES
-===================================================== */
+/* =========================================================
+   CAJAS
+========================================================= */
 
-#instructions {
+.box {
 
-    position:
-        absolute;
+    position: absolute;
 
-    right:
-        18px;
+    transform-style:
+        preserve-3d;
 
-    bottom:
-        17px;
+}
+
+
+.box-face {
+
+    position: absolute;
+
+    border:
+        1px solid rgba(0,0,0,.28);
+
+    backface-visibility:
+        visible;
+
+}
+
+
+.box-top {
+
+    background:
+        linear-gradient(
+            135deg,
+            #69c3eb,
+            #4ea8de
+        );
+
+}
+
+
+.box-side {
+
+    background:
+        linear-gradient(
+            135deg,
+            #3d91c3,
+            #327ca8
+        );
+
+}
+
+
+.box-front {
+
+    background:
+        linear-gradient(
+            135deg,
+            #5db7e3,
+            #4198c8
+        );
+
+}
+
+
+/* =========================================================
+   BOTÓN CENTRAR
+========================================================= */
+
+#center {
+
+    position: fixed;
+
+    right: 18px;
+    top: 82px;
+
+    width: 42px;
+    height: 42px;
+
+    background: white;
+
+    border:
+        1px solid #dfe3e8;
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,.10);
+
+    font-size: 18px;
+
+    z-index: 60;
+}
+
+
+/* =========================================================
+   AYUDA
+========================================================= */
+
+#help {
+
+    position: fixed;
+
+    right: 18px;
+    bottom: 18px;
+
+    background:
+        rgba(255,255,255,.94);
+
+    border:
+        1px solid #dfe3e8;
+
+    border-radius: 8px;
 
     padding:
         9px 13px;
-
-    background:
-        rgba(255,255,255,.93);
-
-    border:
-        1px solid rgba(0,0,0,.08);
-
-    border-radius:
-        8px;
 
     color:
         #6b7280;
@@ -684,106 +704,39 @@ button {
         11px;
 
     box-shadow:
-        0 4px 14px
-        rgba(0,0,0,.08);
+        0 4px 14px rgba(0,0,0,.08);
 
-    z-index:
-        5;
-
+    z-index: 60;
 }
 
-
-/* =====================================================
-   ERROR THREE.JS
-===================================================== */
-
-#threeError {
-
-    display:
-        none;
-
-    position:
-        absolute;
-
-    top:
-        50%;
-
-    left:
-        50%;
-
-    transform:
-        translate(-50%,-50%);
-
-    padding:
-        25px;
-
-    background:
-        white;
-
-    border:
-        2px solid var(--danger);
-
-    border-radius:
-        12px;
-
-    box-shadow:
-        var(--shadow);
-
-    color:
-        var(--danger);
-
-    font-size:
-        14px;
-
-    z-index:
-        100;
-
-}
-
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
 
 @media(max-width:700px) {
 
     #controls {
 
         left: 10px;
-
         right: 10px;
 
-        width:
-            auto;
+        width: auto;
 
-        max-height:
-            52vh;
-
+        max-height: 48vh;
     }
 
-
-    #instructions {
-
-        display:
-            none;
-
+    #help {
+        display: none;
     }
 
 }
 
 </style>
-
 </head>
 
 
 <body>
 
 
-<div id="app">
-
-
 <!-- =====================================================
-     BARRA SUPERIOR
+     BARRA
 ===================================================== -->
 
 <div id="topbar">
@@ -792,7 +745,7 @@ button {
         P
     </div>
 
-    <div class="title-area">
+    <div class="title">
 
         <h1>
             Simulador de Pallet
@@ -808,26 +761,11 @@ button {
 
 
 <!-- =====================================================
-     ERROR
-===================================================== -->
-
-<div id="threeError">
-
-    No se pudo cargar el motor 3D.
-    <br><br>
-    Revisa tu conexión a Internet o el acceso al CDN de Three.js.
-
-</div>
-
-
-<!-- =====================================================
      PANEL
 ===================================================== -->
 
 <div id="controls">
 
-
-    <!-- CAJA -->
 
     <div class="section">
 
@@ -849,16 +787,16 @@ button {
             </label>
 
             <input
-                type="text"
                 id="boxDimensions"
                 class="input"
+                type="text"
                 placeholder="82 26 36"
+                value="82 26 36"
             >
 
             <div class="help">
 
-                Largo · Ancho · Alto
-                en centímetros
+                Largo · Ancho · Alto en centímetros
 
             </div>
 
@@ -868,24 +806,24 @@ button {
         <div class="field">
 
             <label>
-                Peso por caja
+                Peso por caja (kg)
             </label>
 
             <input
-                type="number"
                 id="boxWeight"
                 class="input"
-                placeholder="12.5"
+                type="number"
                 step="0.01"
                 min="0"
+                value="12.5"
             >
 
         </div>
 
 
         <button
-            id="addBoxes"
-            class="primary-button"
+            id="generate"
+            class="primary"
         >
 
             Generar pallet
@@ -897,8 +835,6 @@ button {
 
     <div class="separator"></div>
 
-
-    <!-- PALLET -->
 
     <div class="section">
 
@@ -920,9 +856,9 @@ button {
             </label>
 
             <input
-                type="number"
-                id="palletWidthInput"
+                id="palletWidth"
                 class="input"
+                type="number"
                 value="1.10"
                 step="0.05"
                 min="0.05"
@@ -938,9 +874,9 @@ button {
             </label>
 
             <input
-                type="number"
-                id="palletDepthInput"
+                id="palletDepth"
                 class="input"
+                type="number"
                 value="1.20"
                 step="0.05"
                 min="0.05"
@@ -956,9 +892,9 @@ button {
             </label>
 
             <input
-                type="number"
-                id="palletHeightInput"
+                id="palletHeight"
                 class="input"
+                type="number"
                 value="0.15"
                 step="0.05"
                 min="0.05"
@@ -968,8 +904,8 @@ button {
 
 
         <button
-            id="updatePallet"
-            class="secondary-button"
+            id="update"
+            class="secondary"
         >
 
             Actualizar pallet
@@ -982,9 +918,7 @@ button {
     <div class="separator"></div>
 
 
-    <!-- RESULTADOS -->
-
-    <div id="result-container">
+    <div id="result">
 
         <div class="result-title">
             Resumen de carga
@@ -998,7 +932,7 @@ button {
             </span>
 
             <span
-                id="resultBoxes"
+                id="rBoxes"
                 class="result-value"
             >
                 0
@@ -1014,7 +948,7 @@ button {
             </span>
 
             <span
-                id="resultPerLayer"
+                id="rLayer"
                 class="result-value"
             >
                 0
@@ -1030,7 +964,7 @@ button {
             </span>
 
             <span
-                id="resultLayers"
+                id="rLayers"
                 class="result-value"
             >
                 0
@@ -1046,7 +980,7 @@ button {
             </span>
 
             <span
-                id="resultOccupancy"
+                id="rOccupancy"
                 class="result-value"
             >
                 0%
@@ -1062,7 +996,7 @@ button {
             </span>
 
             <span
-                id="resultWeight"
+                id="rWeight"
                 class="result-value"
             >
                 0 kg
@@ -1075,7 +1009,7 @@ button {
 
     <div id="status">
 
-        <div class="status-dot"></div>
+        <div class="dot"></div>
 
         Simulador listo
 
@@ -1085,29 +1019,39 @@ button {
 
 
 <!-- =====================================================
-     CENTRAR
+     VISTA
 ===================================================== -->
 
+<div id="viewport">
+
+    <div id="floor"></div>
+
+    <div id="camera">
+
+        <div id="world">
+
+            <div id="pallet"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <button
-    id="centerView"
+    id="center"
     title="Centrar vista"
 >
     ⌂
 </button>
 
 
-<!-- =====================================================
-     AYUDA
-===================================================== -->
-
-<div id="instructions">
+<div id="help">
 
     🖱️ Arrastra para rotar
-    &nbsp;·&nbsp;
+    ·
     🔍 Rueda para zoom
-
-</div>
-
 
 </div>
 
@@ -1115,160 +1059,83 @@ button {
 <script>
 
 /* =========================================================
-   VERIFICAR THREE.JS
+   VARIABLES
 ========================================================= */
 
-if (
-    typeof THREE === "undefined"
-) {
+var palletWidth = 1.10;
 
-    document
-        .getElementById(
-            "threeError"
-        )
-        .style.display =
-        "block";
+var palletDepth = 1.20;
+
+var palletHeight = 0.15;
+
+var maxStackHeight = 1.50;
+
+
+/* Escala visual.
+   1 metro = 400 píxeles */
+
+var SCALE = 400;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+var viewport =
+    document.getElementById(
+        "viewport"
+    );
+
+
+var camera =
+    document.getElementById(
+        "camera"
+    );
+
+
+var world =
+    document.getElementById(
+        "world"
+    );
+
+
+var pallet =
+    document.getElementById(
+        "pallet"
+    );
+
+
+/* =========================================================
+   VISTA
+========================================================= */
+
+var rotX = 55;
+
+var rotZ = -35;
+
+var zoom = 1;
+
+
+function updateView() {
+
+    world.style.transform =
+
+        "rotateX(" +
+        rotX +
+        "deg) " +
+
+        "rotateZ(" +
+        rotZ +
+        "deg) " +
+
+        "scale(" +
+        zoom +
+        ")";
 
 }
 
 
-/* =========================================================
-   ESCENA
-========================================================= */
-
-var scene =
-    new THREE.Scene();
-
-
-scene.background =
-    new THREE.Color(
-        0xeef1f5
-    );
-
-
-/* =========================================================
-   CÁMARA
-========================================================= */
-
-var camera =
-    new THREE.PerspectiveCamera(
-
-        45,
-
-        window.innerWidth /
-        window.innerHeight,
-
-        0.1,
-
-        100
-
-    );
-
-
-/* =========================================================
-   RENDERER
-========================================================= */
-
-var renderer =
-    new THREE.WebGLRenderer({
-
-        antialias:
-            true
-
-    });
-
-
-renderer.setSize(
-
-    window.innerWidth,
-
-    window.innerHeight
-
-);
-
-
-renderer.setPixelRatio(
-
-    Math.min(
-
-        window.devicePixelRatio,
-
-        2
-
-    )
-
-);
-
-
-renderer.shadowMap.enabled =
-    true;
-
-
-renderer.shadowMap.type =
-    THREE.PCFSoftShadowMap;
-
-
-document.body.appendChild(
-    renderer.domElement
-);
-
-
-/* =========================================================
-   ILUMINACIÓN
-========================================================= */
-
-scene.add(
-
-    new THREE.AmbientLight(
-        0xffffff,
-        0.7
-    )
-
-);
-
-
-var mainLight =
-    new THREE.DirectionalLight(
-
-        0xffffff,
-
-        1
-
-    );
-
-
-mainLight.position.set(
-    4,
-    8,
-    5
-);
-
-
-mainLight.castShadow =
-    true;
-
-
-scene.add(
-    mainLight
-);
-
-
-/* =========================================================
-   VARIABLES PALLET
-========================================================= */
-
-var palletWidth =
-    1.10;
-
-var palletDepth =
-    1.20;
-
-var palletHeight =
-    0.15;
-
-
-var pallet =
-    null;
+updateView();
 
 
 /* =========================================================
@@ -1277,405 +1144,159 @@ var pallet =
 
 function createPallet() {
 
-
-    if (pallet) {
-
-        scene.remove(
-            pallet
-        );
-
-    }
+    pallet.innerHTML = "";
 
 
-    var geometry =
-        new THREE.BoxGeometry(
-
-            palletWidth,
-
-            palletHeight,
-
-            palletDepth
-
-        );
+    var width =
+        palletWidth *
+        SCALE;
 
 
-    var material =
-        new THREE.MeshLambertMaterial({
-
-            color:
-                0x8b5a2b
-
-        });
+    var depth =
+        palletDepth *
+        SCALE;
 
 
-    pallet =
-        new THREE.Mesh(
+    var height =
+        palletHeight *
+        SCALE;
 
-            geometry,
 
-            material
+    /* -----------------------------------------------------
+       PARTE SUPERIOR
+    ----------------------------------------------------- */
 
+    var top =
+        document.createElement(
+            "div"
         );
 
 
-    pallet.position.y =
-        palletHeight / 2;
+    top.className =
+        "pallet-top";
 
 
-    pallet.castShadow =
-        true;
+    top.style.width =
+        width + "px";
 
 
-    pallet.receiveShadow =
-        true;
+    top.style.height =
+        depth + "px";
 
 
-    scene.add(
-        pallet
-    );
-
-}
+    top.style.left =
+        (-width / 2) + "px";
 
 
-createPallet();
+    top.style.top =
+        (-depth / 2) + "px";
 
 
-/* =========================================================
-   PISO
-========================================================= */
+    top.style.transform =
 
-var floorGeometry =
-    new THREE.PlaneGeometry(
-        20,
-        20
-    );
+        "translateZ(" +
+        height +
+        "px)";
 
 
-var floorMaterial =
-    new THREE.MeshLambertMaterial({
-
-        color:
-            0xe2e6eb
-
-    });
-
-
-var floor =
-    new THREE.Mesh(
-
-        floorGeometry,
-
-        floorMaterial
-
+    pallet.appendChild(
+        top
     );
 
 
-floor.rotation.x =
-    -Math.PI / 2;
+    /* -----------------------------------------------------
+       BLOQUES INFERIORES
+    ----------------------------------------------------- */
 
+    var legWidth =
+        width * .16;
 
-floor.position.y =
-    -0.001;
 
+    var legDepth =
+        depth * .16;
 
-floor.receiveShadow =
-    true;
 
+    var positions = [
 
-scene.add(
-    floor
-);
+        [
+            -width / 2 + legWidth / 2,
+            -depth / 2 + legDepth / 2
+        ],
 
+        [
+            width / 2 - legWidth / 2,
+            -depth / 2 + legDepth / 2
+        ],
 
-/* =========================================================
-   GRID
-========================================================= */
+        [
+            -width / 2 + legWidth / 2,
+            depth / 2 - legDepth / 2
+        ],
 
-var grid =
-    new THREE.GridHelper(
+        [
+            width / 2 - legWidth / 2,
+            depth / 2 - legDepth / 2
+        ]
 
-        10,
+    ];
 
-        20,
 
-        0xb7bec7,
+    positions.forEach(
+        function(pos) {
 
-        0xd5dae0
+            var leg =
+                document.createElement(
+                    "div"
+                );
 
-    );
 
+            leg.className =
+                "pallet-leg";
 
-grid.position.y =
-    0.003;
 
+            leg.style.width =
+                legWidth + "px";
 
-scene.add(
-    grid
-);
 
+            leg.style.height =
+                legDepth + "px";
 
-/* =========================================================
-   CÁMARA
-========================================================= */
 
-var cameraRadius =
-    3.4;
+            leg.style.left =
+                (pos[0] -
+                legWidth / 2) +
+                "px";
 
-var cameraAngle =
-    0.75;
 
-var cameraPitch =
-    0.55;
+            leg.style.top =
+                (pos[1] -
+                legDepth / 2) +
+                "px";
 
 
-function updateCamera() {
+            leg.style.bottom =
+                "auto";
 
 
-    var x =
+            leg.style.transform =
 
-        cameraRadius *
+                "translateZ(0px)";
 
-        Math.cos(
-            cameraPitch
-        ) *
 
-        Math.cos(
-            cameraAngle
-        );
+            leg.style.position =
+                "absolute";
 
 
-    var y =
+            leg.style.height =
+                height + "px";
 
-        cameraRadius *
 
-        Math.sin(
-            cameraPitch
-        );
-
-
-    var z =
-
-        cameraRadius *
-
-        Math.cos(
-            cameraPitch
-        ) *
-
-        Math.sin(
-            cameraAngle
-        );
-
-
-    camera.position.set(
-        x,
-        y,
-        z
-    );
-
-
-    camera.lookAt(
-
-        new THREE.Vector3(
-            0,
-            0.7,
-            0
-        )
-
-    );
-
-}
-
-
-updateCamera();
-
-
-/* =========================================================
-   ROTACIÓN
-========================================================= */
-
-var dragging =
-    false;
-
-var lastX =
-    0;
-
-var lastY =
-    0;
-
-
-renderer.domElement.addEventListener(
-
-    "mousedown",
-
-    function(event) {
-
-        dragging =
-            true;
-
-        lastX =
-            event.clientX;
-
-        lastY =
-            event.clientY;
-
-    }
-
-);
-
-
-window.addEventListener(
-
-    "mouseup",
-
-    function() {
-
-        dragging =
-            false;
-
-    }
-
-);
-
-
-renderer.domElement.addEventListener(
-
-    "mousemove",
-
-    function(event) {
-
-
-        if (!dragging)
-            return;
-
-
-        var dx =
-            event.clientX -
-            lastX;
-
-
-        var dy =
-            event.clientY -
-            lastY;
-
-
-        lastX =
-            event.clientX;
-
-
-        lastY =
-            event.clientY;
-
-
-        cameraAngle -=
-            dx * 0.006;
-
-
-        cameraPitch +=
-            dy * 0.004;
-
-
-        cameraPitch =
-            Math.max(
-
-                0.15,
-
-                Math.min(
-                    1.35,
-                    cameraPitch
-                )
-
-            );
-
-
-        updateCamera();
-
-    }
-
-);
-
-
-/* =========================================================
-   ZOOM
-========================================================= */
-
-renderer.domElement.addEventListener(
-
-    "wheel",
-
-    function(event) {
-
-
-        event.preventDefault();
-
-
-        cameraRadius +=
-            event.deltaY *
-            0.0025;
-
-
-        cameraRadius =
-            Math.max(
-
-                1.7,
-
-                Math.min(
-                    7,
-                    cameraRadius
-                )
-
-            );
-
-
-        updateCamera();
-
-    },
-
-    {
-        passive: false
-    }
-
-);
-
-
-/* =========================================================
-   ELIMINAR CAJAS
-========================================================= */
-
-function removeBoxes() {
-
-
-    for (
-
-        var i =
-            scene.children.length - 1;
-
-        i >= 0;
-
-        i--
-
-    ) {
-
-
-        var object =
-            scene.children[i];
-
-
-        if (
-
-            object.userData &&
-
-            object.userData.type ===
-                "box"
-
-        ) {
-
-            scene.remove(
-                object
+            pallet.appendChild(
+                leg
             );
 
         }
-
-    }
+    );
 
 }
 
@@ -1690,218 +1311,220 @@ function createBox(
     y,
     z,
     width,
-    height,
     depth,
+    height,
     color
 
 ) {
 
-
-    var geometry =
-        new THREE.BoxGeometry(
-
-            width,
-            height,
-            depth
-
-        );
-
-
-    var material =
-        new THREE.MeshLambertMaterial({
-
-            color:
-                color
-
-        });
-
-
     var box =
-        new THREE.Mesh(
-
-            geometry,
-
-            material
-
+        document.createElement(
+            "div"
         );
 
 
-    box.position.set(
+    box.className =
+        "box";
 
-        x,
-        y,
-        z
 
+    var w =
+        width *
+        SCALE;
+
+
+    var d =
+        depth *
+        SCALE;
+
+
+    var h =
+        height *
+        SCALE;
+
+
+    box.style.width =
+        w + "px";
+
+
+    box.style.height =
+        h + "px";
+
+
+    box.style.left =
+        (x * SCALE -
+        w / 2) + "px";
+
+
+    box.style.top =
+        (z * SCALE -
+        d / 2) + "px";
+
+
+    box.style.transform =
+
+        "translateZ(" +
+        (y * SCALE) +
+        "px)";
+
+
+    /* -----------------------------------------------------
+       CARA SUPERIOR
+    ----------------------------------------------------- */
+
+    var top =
+        document.createElement(
+            "div"
+        );
+
+
+    top.className =
+        "box-face box-top";
+
+
+    top.style.width =
+        w + "px";
+
+
+    top.style.height =
+        d + "px";
+
+
+    top.style.left =
+        "0";
+
+
+    top.style.top =
+        "0";
+
+
+    top.style.background =
+        color;
+
+
+    top.style.transform =
+
+        "rotateX(90deg) " +
+        "translateZ(" +
+        (d / 2) +
+        "px)";
+
+
+    box.appendChild(
+        top
     );
 
 
-    box.castShadow =
-        true;
+    /* -----------------------------------------------------
+       CARA FRONTAL
+    ----------------------------------------------------- */
+
+    var front =
+        document.createElement(
+            "div"
+        );
 
 
-    box.receiveShadow =
-        true;
+    front.className =
+        "box-face box-front";
 
 
-    box.userData = {
-
-        type:
-            "box"
-
-    };
+    front.style.width =
+        w + "px";
 
 
-    scene.add(
+    front.style.height =
+        h + "px";
+
+
+    front.style.left =
+        "0";
+
+
+    front.style.top =
+        "0";
+
+
+    front.style.background =
+        color;
+
+
+    front.style.transform =
+
+        "translateZ(" +
+        (d / 2) +
+        "px)";
+
+
+    box.appendChild(
+        front
+    );
+
+
+    /* -----------------------------------------------------
+       CARA LATERAL
+    ----------------------------------------------------- */
+
+    var side =
+        document.createElement(
+            "div"
+        );
+
+
+    side.className =
+        "box-face box-side";
+
+
+    side.style.width =
+        d + "px";
+
+
+    side.style.height =
+        h + "px";
+
+
+    side.style.left =
+        (w / 2 -
+        d / 2) + "px";
+
+
+    side.style.top =
+        "0";
+
+
+    side.style.background =
+        color;
+
+
+    side.style.transform =
+
+        "rotateY(90deg) " +
+        "translateZ(" +
+        (w / 2) +
+        "px)";
+
+
+    box.appendChild(
+        side
+    );
+
+
+    world.appendChild(
         box
     );
 
-
-    /* ---------------------------------------------
-       BORDES
-    --------------------------------------------- */
-
-    var edges =
-        new THREE.EdgesGeometry(
-            geometry
-        );
-
-
-    var edgeMaterial =
-        new THREE.LineBasicMaterial({
-
-            color:
-                0x263238
-
-        });
-
-
-    var line =
-        new THREE.LineSegments(
-
-            edges,
-
-            edgeMaterial
-
-        );
-
-
-    line.position.copy(
-        box.position
-    );
-
-
-    scene.add(
-        line
-    );
-
 }
 
 
 /* =========================================================
-   CALCULAR MEJOR ORIENTACIÓN
+   GENERAR
 ========================================================= */
 
-function calculateBestOrientation(
-
-    boxW,
-    boxD
-
-) {
+function generatePallet() {
 
 
-    var option1Columns =
-        Math.floor(
-            palletWidth /
-            boxW
-        );
-
-
-    var option1Rows =
-        Math.floor(
-            palletDepth /
-            boxD
-        );
-
-
-    var option1Total =
-        option1Columns *
-        option1Rows;
-
-
-    var option2Columns =
-        Math.floor(
-            palletWidth /
-            boxD
-        );
-
-
-    var option2Rows =
-        Math.floor(
-            palletDepth /
-            boxW
-        );
-
-
-    var option2Total =
-        option2Columns *
-        option2Rows;
-
-
-    if (
-        option2Total >
-        option1Total
-    ) {
-
-        return {
-
-            width:
-                boxD,
-
-            depth:
-                boxW,
-
-            columns:
-                option2Columns,
-
-            rows:
-                option2Rows,
-
-            total:
-                option2Total
-
-        };
-
-    }
-
-
-    return {
-
-        width:
-            boxW,
-
-        depth:
-            boxD,
-
-        columns:
-            option1Columns,
-
-        rows:
-            option1Rows,
-
-        total:
-            option1Total
-
-    };
-
-}
-
-
-/* =========================================================
-   GENERAR PALLET
-========================================================= */
-
-function addBoxes() {
-
+    /* -----------------------------------------------------
+       LEER CAJA
+    ----------------------------------------------------- */
 
     var input =
         document
@@ -1923,13 +1546,7 @@ function addBoxes() {
     ) {
 
         alert(
-
-            "Ingresa las dimensiones así:\n\n" +
-
-            "Largo Ancho Alto\n\n" +
-
-            "Ejemplo:\n82 26 36"
-
+            "Ingresa las dimensiones como:\n\n82 26 36"
         );
 
         return;
@@ -1937,19 +1554,19 @@ function addBoxes() {
     }
 
 
-    var boxD =
+    var boxLength =
         parseFloat(
             parts[0]
         ) / 100;
 
 
-    var boxW =
+    var boxWidth =
         parseFloat(
             parts[1]
         ) / 100;
 
 
-    var boxH =
+    var boxHeight =
         parseFloat(
             parts[2]
         ) / 100;
@@ -1957,29 +1574,27 @@ function addBoxes() {
 
     var boxWeight =
         parseFloat(
-
             document
             .getElementById(
                 "boxWeight"
             )
             .value
-
         );
 
 
     if (
 
-        !isFinite(boxD) ||
+        !isFinite(boxLength) ||
 
-        !isFinite(boxW) ||
+        !isFinite(boxWidth) ||
 
-        !isFinite(boxH) ||
+        !isFinite(boxHeight) ||
 
-        boxD <= 0 ||
+        boxLength <= 0 ||
 
-        boxW <= 0 ||
+        boxWidth <= 0 ||
 
-        boxH <= 0
+        boxHeight <= 0
 
     ) {
 
@@ -2009,32 +1624,38 @@ function addBoxes() {
     }
 
 
-    /* =================================================
-       LIMPIAR
-    ================================================= */
+    /* -----------------------------------------------------
+       LIMPIAR CAJAS
+    ----------------------------------------------------- */
 
-    removeBoxes();
-
-
-    /* =================================================
-       ALTURA
-    ================================================= */
-
-    var maxStackHeight =
-        1.50;
+    var oldBoxes =
+        world.querySelectorAll(
+            ".box"
+        );
 
 
-    var maxLayers =
+    oldBoxes.forEach(
+        function(box) {
+
+            box.remove();
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       CAPAS
+    ----------------------------------------------------- */
+
+    var layers =
         Math.floor(
-
             maxStackHeight /
-            boxH
-
+            boxHeight
         );
 
 
     if (
-        maxLayers <= 0
+        layers <= 0
     ) {
 
         alert(
@@ -2046,27 +1667,112 @@ function addBoxes() {
     }
 
 
-    /* =================================================
-       MEJOR ORIENTACIÓN
-    ================================================= */
+    /* -----------------------------------------------------
+       ORIENTACIÓN 1
+    ----------------------------------------------------- */
 
-    var orientation =
-        calculateBestOrientation(
-
-            boxW,
-            boxD
-
+    var columns1 =
+        Math.floor(
+            palletWidth /
+            boxWidth
         );
 
 
+    var rows1 =
+        Math.floor(
+            palletDepth /
+            boxLength
+        );
+
+
+    var total1 =
+        columns1 *
+        rows1;
+
+
+    /* -----------------------------------------------------
+       ORIENTACIÓN 2
+    ----------------------------------------------------- */
+
+    var columns2 =
+        Math.floor(
+            palletWidth /
+            boxLength
+        );
+
+
+    var rows2 =
+        Math.floor(
+            palletDepth /
+            boxWidth
+        );
+
+
+    var total2 =
+        columns2 *
+        rows2;
+
+
+    /* -----------------------------------------------------
+       SELECCIONAR
+    ----------------------------------------------------- */
+
+    var bestWidth;
+
+    var bestDepth;
+
+    var columns;
+
+    var rows;
+
+    var boxesPerLayer;
+
+
     if (
-        orientation.total <= 0
+        total2 > total1
+    ) {
+
+        bestWidth =
+            boxLength;
+
+        bestDepth =
+            boxWidth;
+
+        columns =
+            columns2;
+
+        rows =
+            rows2;
+
+        boxesPerLayer =
+            total2;
+
+    } else {
+
+        bestWidth =
+            boxWidth;
+
+        bestDepth =
+            boxLength;
+
+        columns =
+            columns1;
+
+        rows =
+            rows1;
+
+        boxesPerLayer =
+            total1;
+
+    }
+
+
+    if (
+        boxesPerLayer <= 0
     ) {
 
         alert(
-
             "La caja no cabe dentro del pallet."
-
         );
 
         return;
@@ -2074,159 +1780,83 @@ function addBoxes() {
     }
 
 
-    var boxesPerLayer =
-        orientation.total;
-
+    /* -----------------------------------------------------
+       GENERAR CAJAS
+    ----------------------------------------------------- */
 
     var totalBoxes =
-        boxesPerLayer *
-        maxLayers;
+        0;
 
-
-    /* =================================================
-       GENERAR CAPAS
-    ================================================= */
 
     for (
-
         var layer = 0;
 
-        layer < maxLayers;
+        layer < layers;
 
         layer++
-
     ) {
 
 
-        var rotate =
-            layer % 2 === 1;
-
-
-        var width =
-            orientation.width;
-
-
-        var depth =
-            orientation.depth;
-
-
         /*
-         * En capas alternas usamos la otra orientación
-         * si realmente cabe.
-         */
-
-        if (rotate) {
-
-
-            var alt =
-                calculateBestOrientation(
-
-                    boxD,
-                    boxW
-
-                );
-
-
-            if (
-                alt.total > 0
-            ) {
-
-                width =
-                    alt.width;
-
-                depth =
-                    alt.depth;
-
-            }
-
-        }
-
-
-        var columns =
-            Math.floor(
-
-                palletWidth /
-                width
-
-            );
-
-
-        var rows =
-            Math.floor(
-
-                palletDepth /
-                depth
-
-            );
-
-
-        var layerBoxes =
-            columns *
-            rows;
-
-
-        /*
-         * Centrar las cajas dentro del pallet.
+         * Para mantener todas las capas
+         * con la misma cantidad, usamos
+         * siempre la misma orientación.
          */
 
         var usedWidth =
             columns *
-            width;
+            bestWidth;
 
 
         var usedDepth =
             rows *
-            depth;
+            bestDepth;
 
 
-        var offsetX =
+        var startX =
             -usedWidth / 2;
 
 
-        var offsetZ =
+        var startZ =
             -usedDepth / 2;
 
 
         for (
-
             var row = 0;
 
             row < rows;
 
             row++
-
         ) {
 
 
             for (
-
                 var col = 0;
 
                 col < columns;
 
                 col++
-
             ) {
 
 
                 var x =
 
-                    offsetX +
+                    startX +
 
                     col *
-                    width +
+                    bestWidth +
 
-                    width / 2;
+                    bestWidth / 2;
 
 
                 var z =
 
-                    offsetZ +
+                    startZ +
 
                     row *
-                    depth +
+                    bestDepth +
 
-                    depth / 2;
+                    bestDepth / 2;
 
 
                 var y =
@@ -2234,33 +1864,38 @@ function addBoxes() {
                     palletHeight +
 
                     layer *
-                    boxH +
-
-                    boxH / 2;
+                    boxHeight;
 
 
                 var color =
 
-                    rotate
+                    layer % 2 === 0
 
-                    ? 0xf4a261
+                    ? "#56b4e9"
 
-                    : 0x4ea8de;
+                    : "#f4a261";
 
 
                 createBox(
 
                     x,
+
                     y,
+
                     z,
 
-                    width,
-                    boxH,
-                    depth,
+                    bestWidth,
+
+                    bestDepth,
+
+                    boxHeight,
 
                     color
 
                 );
+
+
+                totalBoxes++;
 
             }
 
@@ -2269,9 +1904,9 @@ function addBoxes() {
     }
 
 
-    /* =================================================
+    /* -----------------------------------------------------
        ESTADÍSTICAS
-    ================================================= */
+    ----------------------------------------------------- */
 
     var palletVolume =
 
@@ -2282,9 +1917,9 @@ function addBoxes() {
 
     var boxVolume =
 
-        boxW *
-        boxD *
-        boxH *
+        boxLength *
+        boxWidth *
+        boxHeight *
         totalBoxes;
 
 
@@ -2293,7 +1928,8 @@ function addBoxes() {
         (
             boxVolume /
             palletVolume
-        ) * 100;
+        ) *
+        100;
 
 
     occupancy =
@@ -2309,13 +1945,13 @@ function addBoxes() {
         boxWeight;
 
 
-    /* =================================================
+    /* -----------------------------------------------------
        MOSTRAR
-    ================================================= */
+    ----------------------------------------------------- */
 
     document
         .getElementById(
-            "resultBoxes"
+            "rBoxes"
         )
         .textContent =
         totalBoxes;
@@ -2323,7 +1959,7 @@ function addBoxes() {
 
     document
         .getElementById(
-            "resultPerLayer"
+            "rLayer"
         )
         .textContent =
         boxesPerLayer;
@@ -2331,15 +1967,15 @@ function addBoxes() {
 
     document
         .getElementById(
-            "resultLayers"
+            "rLayers"
         )
         .textContent =
-        maxLayers;
+        layers;
 
 
     document
         .getElementById(
-            "resultOccupancy"
+            "rOccupancy"
         )
         .textContent =
 
@@ -2349,7 +1985,7 @@ function addBoxes() {
 
     document
         .getElementById(
-            "resultWeight"
+            "rWeight"
         )
         .textContent =
 
@@ -2363,7 +1999,7 @@ function addBoxes() {
         )
         .innerHTML =
 
-        '<div class="status-dot"></div>' +
+        '<div class="dot"></div>' +
 
         'Pallet generado correctamente';
 
@@ -2371,235 +2007,275 @@ function addBoxes() {
 
 
 /* =========================================================
-   BOTÓN GENERAR
-========================================================= */
-
-document
-    .getElementById(
-        "addBoxes"
-    )
-    .addEventListener(
-
-        "click",
-
-        addBoxes
-
-    );
-
-
-/* =========================================================
    ACTUALIZAR PALLET
 ========================================================= */
 
-document
-    .getElementById(
-        "updatePallet"
-    )
-    .addEventListener(
-
-        "click",
-
-        function() {
-
-
-            var w =
-                parseFloat(
-
-                    document
-                    .getElementById(
-                        "palletWidthInput"
-                    )
-                    .value
-
-                );
-
-
-            var d =
-                parseFloat(
-
-                    document
-                    .getElementById(
-                        "palletDepthInput"
-                    )
-                    .value
-
-                );
-
-
-            var h =
-                parseFloat(
-
-                    document
-                    .getElementById(
-                        "palletHeightInput"
-                    )
-                    .value
-
-                );
-
-
-            if (
-
-                !isFinite(w) ||
-
-                !isFinite(d) ||
-
-                !isFinite(h) ||
-
-                w <= 0 ||
-
-                d <= 0 ||
-
-                h <= 0
-
-            ) {
-
-                alert(
-                    "Las dimensiones del pallet no son válidas."
-                );
-
-                return;
-
-            }
-
-
-            palletWidth =
-                w;
-
-
-            palletDepth =
-                d;
-
-
-            palletHeight =
-                h;
-
-
-            createPallet();
-
-
-            var dimensions =
-                document
-                .getElementById(
-                    "boxDimensions"
-                )
-                .value
-                .trim();
-
-
-            var weight =
-                document
-                .getElementById(
-                    "boxWeight"
-                )
-                .value;
-
-
-            if (
-
-                dimensions &&
-                weight
-
-            ) {
-
-                addBoxes();
-
-            }
-
-        }
-
-    );
-
-
-/* =========================================================
-   CENTRAR CÁMARA
-========================================================= */
-
-document
-    .getElementById(
-        "centerView"
-    )
-    .addEventListener(
-
-        "click",
-
-        function() {
-
-
-            cameraRadius =
-                3.4;
-
-
-            cameraAngle =
-                0.75;
-
-
-            cameraPitch =
-                0.55;
-
-
-            updateCamera();
-
-        }
-
-    );
-
-
-/* =========================================================
-   RESIZE
-========================================================= */
-
-window.addEventListener(
-
-    "resize",
-
-    function() {
-
-
-        camera.aspect =
-
-            window.innerWidth /
-            window.innerHeight;
-
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-
-            window.innerWidth,
-
-            window.innerHeight
-
+function updatePallet() {
+
+
+    var width =
+        parseFloat(
+            document
+            .getElementById(
+                "palletWidth"
+            )
+            .value
         );
+
+
+    var depth =
+        parseFloat(
+            document
+            .getElementById(
+                "palletDepth"
+            )
+            .value
+        );
+
+
+    var height =
+        parseFloat(
+            document
+            .getElementById(
+                "palletHeight"
+            )
+            .value
+        );
+
+
+    if (
+
+        !isFinite(width) ||
+
+        !isFinite(depth) ||
+
+        !isFinite(height) ||
+
+        width <= 0 ||
+
+        depth <= 0 ||
+
+        height <= 0
+
+    ) {
+
+        alert(
+            "Las dimensiones del pallet no son válidas."
+        );
+
+        return;
 
     }
 
-);
+
+    palletWidth =
+        width;
 
 
-/* =========================================================
-   ANIMACIÓN
-========================================================= */
-
-function animate() {
+    palletDepth =
+        depth;
 
 
-    requestAnimationFrame(
-        animate
-    );
+    palletHeight =
+        height;
 
 
-    renderer.render(
-        scene,
-        camera
-    );
+    createPallet();
+
+
+    generatePallet();
 
 }
 
 
-animate();
+/* =========================================================
+   BOTONES
+========================================================= */
 
+document
+    .getElementById(
+        "generate"
+    )
+    .addEventListener(
+        "click",
+        generatePallet
+    );
+
+
+document
+    .getElementById(
+        "update"
+    )
+    .addEventListener(
+        "click",
+        updatePallet
+    );
+
+
+/* =========================================================
+   CENTRAR
+========================================================= */
+
+document
+    .getElementById(
+        "center"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            rotX = 55;
+
+            rotZ = -35;
+
+            zoom = 1;
+
+            updateView();
+
+        }
+    );
+
+
+/* =========================================================
+   ROTACIÓN CON MOUSE
+========================================================= */
+
+var dragging =
+    false;
+
+var previousX =
+    0;
+
+var previousY =
+    0;
+
+
+viewport.addEventListener(
+    "mousedown",
+    function(event) {
+
+        dragging = true;
+
+        previousX =
+            event.clientX;
+
+        previousY =
+            event.clientY;
+
+    }
+);
+
+
+window.addEventListener(
+    "mouseup",
+    function() {
+
+        dragging = false;
+
+    }
+);
+
+
+viewport.addEventListener(
+    "mousemove",
+    function(event) {
+
+        if (!dragging)
+            return;
+
+
+        var dx =
+            event.clientX -
+            previousX;
+
+
+        var dy =
+            event.clientY -
+            previousY;
+
+
+        previousX =
+            event.clientX;
+
+
+        previousY =
+            event.clientY;
+
+
+        rotZ +=
+            dx * 0.4;
+
+
+        rotX -=
+            dy * 0.3;
+
+
+        rotX =
+            Math.max(
+                15,
+                Math.min(
+                    80,
+                    rotX
+                )
+            );
+
+
+        updateView();
+
+    }
+);
+
+
+/* =========================================================
+   ZOOM
+========================================================= */
+
+viewport.addEventListener(
+    "wheel",
+    function(event) {
+
+        event.preventDefault();
+
+
+        if (
+            event.deltaY < 0
+        ) {
+
+            zoom += .08;
+
+        } else {
+
+            zoom -= .08;
+
+        }
+
+
+        zoom =
+            Math.max(
+                .45,
+                Math.min(
+                    2.5,
+                    zoom
+                )
+            );
+
+
+        updateView();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+createPallet();
+
+generatePallet();
 
 </script>
 
