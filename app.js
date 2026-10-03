@@ -63,6 +63,26 @@ function permuteDimensions(dimensions) {
   return variants;
 }
 
+function getPatternLayerBoxes(pallet, variant) {
+  const baseA = {
+    x: variant.x,
+    y: variant.y,
+    count: Math.max(0, Math.floor(pallet.length / variant.x) * Math.floor(pallet.width / variant.y)),
+  };
+
+  const baseB = {
+    x: variant.y,
+    y: variant.x,
+    count: Math.max(0, Math.floor(pallet.length / variant.y) * Math.floor(pallet.width / variant.x)),
+  };
+
+  if (variant.x === variant.y) {
+    return baseA.count;
+  }
+
+  return baseA.count + baseB.count;
+}
+
 function getBestOrientation(box, pallet) {
   const variants = [];
   const dimensions = [box.length, box.width, box.height];
@@ -83,10 +103,7 @@ function getBestOrientation(box, pallet) {
       continue;
     }
 
-    const boxesPerRow = Math.floor(pallet.length / variant.x);
-    const boxesPerColumn = Math.floor(pallet.width / variant.y);
-    const boxesPerLayer = boxesPerRow * boxesPerColumn;
-
+    const boxesPerLayer = getPatternLayerBoxes(pallet, variant);
     if (boxesPerLayer <= 0) {
       continue;
     }
@@ -275,30 +292,38 @@ function render3DFromResult(best) {
   const boxLength = best.x;
   const boxWidth = best.y;
   const boxHeight = best.z;
-  const rows = Math.max(1, Math.floor(palletLength / boxLength));
-  const cols = Math.max(1, Math.floor(palletWidth / boxWidth));
   let created = 0;
+
+  const rows = Math.max(1, Math.ceil(Math.max(palletLength, palletWidth) / Math.min(boxLength, boxWidth)));
 
   for (let layer = 0; layer < best.layers; layer++) {
     for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (created >= best.totalBoxes) break;
+      const isRotated = row % 2 === 1 && boxLength !== boxWidth;
+      const currentLength = isRotated ? boxWidth : boxLength;
+      const currentWidth = isRotated ? boxLength : boxWidth;
+      const countPerRow = Math.max(1, Math.floor(palletLength / currentLength));
+      const countCols = Math.max(1, Math.floor(palletWidth / currentWidth));
 
-        const geometry = new THREE.BoxGeometry(boxLength, boxHeight, boxWidth);
-        const material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color().setHSL((created % 8) / 8, 0.7, 0.6),
-          roughness: 0.45,
-          metalness: 0.12,
-        });
+      for (let i = 0; i < countPerRow; i++) {
+        for (let j = 0; j < countCols; j++) {
+          if (created >= best.totalBoxes) break;
 
-        const boxMesh = new THREE.Mesh(geometry, material);
-        const x = -palletLength / 2 + boxLength / 2 + row * boxLength;
-        const z = -palletWidth / 2 + boxWidth / 2 + col * boxWidth;
-        const y = palletThickness + boxHeight / 2 + layer * boxHeight;
+          const geometry = new THREE.BoxGeometry(currentLength, boxHeight, currentWidth);
+          const material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color().setHSL((created % 8) / 8, 0.7, 0.6),
+            roughness: 0.45,
+            metalness: 0.12,
+          });
 
-        boxMesh.position.set(x, y, z);
-        palletGroup.add(boxMesh);
-        created += 1;
+          const boxMesh = new THREE.Mesh(geometry, material);
+          const x = -palletLength / 2 + currentLength / 2 + i * currentLength;
+          const z = -palletWidth / 2 + currentWidth / 2 + j * currentWidth;
+          const y = palletThickness + boxHeight / 2 + layer * boxHeight;
+
+          boxMesh.position.set(x, y, z);
+          palletGroup.add(boxMesh);
+          created += 1;
+        }
       }
     }
   }
@@ -357,7 +382,7 @@ function calculateLayout() {
 
   resultBox.innerHTML = `
     <h3>Mejor disposición encontrada</h3>
-    <p class="muted">Se aprovecha la orientación que maximiza la cantidad de cajas y mantiene capas iguales.</p>
+    <p class="muted">Se aprovecha la orientación horizontal alternada para maximizar el uso por capa.</p>
 
     <div class="metrics">
       <div class="metric">
@@ -389,7 +414,7 @@ function calculateLayout() {
     <ul>
       <li>El pallet mide ${formatNumber(pallet.length)} m × ${formatNumber(pallet.width)} m.</li>
       <li>La altura máxima permitida es ${formatNumber(pallet.maxHeight)} m, tomando en cuenta un pallet de ${formatNumber(pallet.thickness)} m.</li>
-      <li>Las capas son todas iguales para mantener la estructura uniforme.</li>
+      <li>Las filas alternan orientación horizontal para aprovechar mejor el espacio por capa.</li>
     </ul>
   `;
 
