@@ -273,7 +273,7 @@ function clearGroup(group) {
   }
 }
 
-function render3DFromResult(best) {
+function render3DFromResult(best, pallet) {
   if (!scene) {
     init3DScene();
   }
@@ -282,9 +282,9 @@ function render3DFromResult(best) {
 
   clearGroup(palletGroup);
 
-  const palletLength = parseFloat(document.getElementById('pallet-length').value);
-  const palletWidth = parseFloat(document.getElementById('pallet-width').value);
-  const palletThickness = parseFloat(document.getElementById('pallet-thickness').value);
+  const palletLength = pallet.length;
+  const palletWidth = pallet.width;
+  const palletThickness = pallet.thickness;
 
   const palletGeometry = new THREE.BoxGeometry(palletLength, palletThickness, palletWidth);
   const palletMaterial = new THREE.MeshStandardMaterial({
@@ -430,7 +430,7 @@ function calculateLayout() {
     </ul>
   `;
 
-  render3DFromResult(best);
+  render3DFromResult(best, pallet);
 }
 
 form.addEventListener('submit', function (event) {
