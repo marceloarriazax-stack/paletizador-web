@@ -28,18 +28,22 @@ const cameraInitialPosition = {
   y: 2.8,
 };
 
+function safeGetElement(id) {
+  return document.getElementById(id);
+}
+
 function getInputs() {
   const box = {
-    length: parseFloat(document.getElementById('box-length').value),
-    width: parseFloat(document.getElementById('box-width').value),
-    height: parseFloat(document.getElementById('box-height').value),
+    length: parseFloat(safeGetElement('box-length')?.value ?? '0'),
+    width: parseFloat(safeGetElement('box-width')?.value ?? '0'),
+    height: parseFloat(safeGetElement('box-height')?.value ?? '0'),
   };
 
   const pallet = {
-    length: parseFloat(document.getElementById('pallet-length').value) || palletDefaults.length,
-    width: parseFloat(document.getElementById('pallet-width').value) || palletDefaults.width,
-    thickness: parseFloat(document.getElementById('pallet-thickness').value) || palletDefaults.thickness,
-    maxHeight: parseFloat(document.getElementById('max-height').value) || palletDefaults.maxHeight,
+    length: parseFloat(safeGetElement('pallet-length')?.value ?? String(palletDefaults.length)) || palletDefaults.length,
+    width: parseFloat(safeGetElement('pallet-width')?.value ?? String(palletDefaults.width)) || palletDefaults.width,
+    thickness: parseFloat(safeGetElement('pallet-thickness')?.value ?? String(palletDefaults.thickness)) || palletDefaults.thickness,
+    maxHeight: parseFloat(safeGetElement('max-height')?.value ?? String(palletDefaults.maxHeight)) || palletDefaults.maxHeight,
   };
 
   return { box, pallet };
@@ -51,41 +55,33 @@ function formatNumber(value, decimals = 2) {
 
 function permuteDimensions(dimensions) {
   const variants = [];
-  const d = [...dimensions];
+  let d = [...dimensions];
 
   for (let i = 0; i < 3; i++) {
-    const current = d.slice();
-    variants.push(current);
-    const next = [d[1], d[2], d[0]];
-    d.splice(0, d.length, ...next);
+    variants.push([...d]);
+    d = [d[1], d[2], d[0]];
   }
 
   return variants;
 }
 
-function getAlternatingPatternCount(palletObj, variant) {
+function countAlternatingLayerBoxes(palletObj, variant) {
   if (variant.x <= 0 || variant.y <= 0) return 0;
 
   let total = 0;
-  let rowIndex = 0;
+  const rows = Math.max(1, Math.ceil(palletObj.length / Math.min(variant.x, variant.y)));
 
-  while (true) {
+  for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
     const useRotated = rowIndex % 2 === 1 && variant.x !== variant.y;
     const currentLength = useRotated ? variant.y : variant.x;
     const currentWidth = useRotated ? variant.x : variant.y;
 
     const boxesPerRow = Math.max(0, Math.floor(palletObj.length / currentLength));
     const boxesPerColumn = Math.max(0, Math.floor(palletObj.width / currentWidth));
-    const boxesThisRow = boxesPerRow * boxesPerColumn;
+    const rowTotal = boxesPerRow * boxesPerColumn;
 
-    if (boxesThisRow <= 0) {
-      break;
-    }
-
-    total += boxesThisRow;
-    rowIndex += 1;
-
-    if (total >= 100000) break;
+    if (rowTotal <= 0) continue;
+    total += rowTotal;
   }
 
   return total;
@@ -111,17 +107,12 @@ function getBestOrientation(box, palletObj) {
       continue;
     }
 
-    const boxesPerLayer = getAlternatingPatternCount(palletObj, variant);
-    if (boxesPerLayer <= 0) {
-      continue;
-    }
+    const boxesPerLayer = countAlternatingLayerBoxes(palletObj, variant);
+    if (boxesPerLayer <= 0) continue;
 
     const usableStackHeight = Math.max(0, palletObj.maxHeight - palletObj.thickness);
     const layers = Math.floor(usableStackHeight / variant.z);
-
-    if (layers <= 0) {
-      continue;
-    }
+    if (layers <= 0) continue;
 
     valid.push({
       ...variant,
@@ -133,9 +124,7 @@ function getBestOrientation(box, palletObj) {
     });
   }
 
-  if (!valid.length) {
-    return null;
-  }
+  if (!valid.length) return null;
 
   valid.sort((a, b) => {
     if (b.totalBoxes !== a.totalBoxes) return b.totalBoxes - a.totalBoxes;
@@ -207,7 +196,7 @@ function updateCameraPosition() {
 }
 
 function init3DScene() {
-  const container = document.getElementById('canvas-container');
+  const container = safeGetElement('canvas-container');
   if (!container) return;
 
   if (!container.clientWidth || !container.clientHeight) {
@@ -274,11 +263,8 @@ function clearGroup(group) {
 }
 
 function render3DFromResult(best, palletObj) {
-  if (!scene) {
-    init3DScene();
-  }
-
-  if (!palletGroup || !renderer || !camera) return;
+  if (!scene) init3DScene();
+  if (!palletGroup || !renderer || !camera || !palletObj) return;
 
   clearGroup(palletGroup);
 
@@ -345,6 +331,8 @@ function render3DFromResult(best, palletObj) {
 }
 
 function calculateLayout() {
+  if (!form || !resultBox) return;
+
   const { box, pallet } = getInputs();
 
   if (
@@ -433,25 +421,29 @@ function calculateLayout() {
   render3DFromResult(best, pallet);
 }
 
-form.addEventListener('submit', function (event) {
-  event.preventDefault();
-  calculateLayout();
-});
+if (form) {
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    calculateLayout();
+  });
+}
 
-exampleButton.addEventListener('click', () => {
-  document.getElementById('box-length').value = '0.6';
-  document.getElementById('box-width').value = '0.4';
-  document.getElementById('box-height').value = '0.25';
-  document.getElementById('pallet-length').value = '1.2';
-  document.getElementById('pallet-width').value = '1.0';
-  document.getElementById('pallet-thickness').value = '0.13';
-  document.getElementById('max-height').value = '1.6';
-  calculateLayout();
-});
+if (exampleButton) {
+  exampleButton.addEventListener('click', () => {
+    safeGetElement('box-length').value = '0.6';
+    safeGetElement('box-width').value = '0.4';
+    safeGetElement('box-height').value = '0.25';
+    safeGetElement('pallet-length').value = '1.2';
+    safeGetElement('pallet-width').value = '1.0';
+    safeGetElement('pallet-thickness').value = '0.13';
+    safeGetElement('max-height').value = '1.6';
+    calculateLayout();
+  });
+}
 
 window.addEventListener('resize', () => {
   if (!renderer || !camera) return;
-  const container = document.getElementById('canvas-container');
+  const container = safeGetElement('canvas-container');
   if (!container) return;
   const width = container.clientWidth || 700;
   const height = container.clientHeight || 500;
